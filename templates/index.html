@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoEC Segmentation</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Inter.ttf') }}" as="font" type="font/ttf" crossorigin>
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+<header class="app-header"><div class="container dashboard-container header-content">
+  <a class="brand" href="/" aria-label="LoEC Segmentation — Trang chính"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="8" y="8" width="8" height="8" rx="2" fill="currentColor"/></svg></span><span>LoEC Segmentation</span></a>
+  <span id="model-status" class="status-pill" role="status">Đang kiểm tra</span>
+</div></header>
+<main class="container dashboard-container">
+  <section aria-labelledby="upload-title">
+    <div class="section-head"><h1 id="upload-title">Dữ liệu đầu vào</h1><span class="muted-note">JPG, JPEG, PNG · Tối đa 10 MB / ảnh</span></div>
+    <form id="predict-form">
+      <div class="row g-3 g-xl-4">
+        {% for key, number, title in [('support_image','01','Ảnh hỗ trợ'), ('support_mask','02','Mặt nạ hỗ trợ'), ('query_image','03','Ảnh truy vấn')] %}
+        <div class="col-12 col-md-6 col-lg-4"><div class="upload-card">
+          <div class="upload-title"><span class="step-number" aria-hidden="true">{{ number }}</span><h2>{{ title }}</h2></div>
+          <label class="drop-zone" data-input="{{ key }}" for="{{ key }}">
+            <img class="preview" id="preview-{{ key }}" alt="Xem trước {{ title }}" hidden>
+            <span class="drop-placeholder"><svg class="upload-symbol" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="choose-button">Chọn ảnh</span><span>hoặc kéo thả vào đây</span></span>
+            <input type="file" id="{{ key }}" name="{{ key }}" accept=".jpg,.jpeg,.png" aria-label="Chọn {{ title | lower }}" required>
+            <span class="change-image" aria-hidden="true">Đổi ảnh</span>
+          </label><p class="file-name" id="name-{{ key }}">Chưa chọn ảnh</p>
+        </div></div>
+        {% endfor %}
+      </div>
+      <div class="gt-box"><label for="query_gt">Mặt nạ tham chiếu <span>(Ground Truth)</span><span class="optional">Không bắt buộc</span></label><div class="gt-input"><input class="form-control" type="file" id="query_gt" name="query_gt" accept=".jpg,.jpeg,.png"><span id="name-query_gt" class="visually-hidden" aria-live="polite">Chưa chọn ảnh</span></div></div>
+      <div class="controls"><div class="action-buttons">
+        <button type="submit" class="btn btn-primary" id="predict-button" disabled><span class="spinner-border spinner-border-sm" id="spinner" hidden aria-hidden="true"></span><span id="button-label">Bắt đầu phân đoạn</span><svg id="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="reset" class="btn btn-outline-secondary" id="reset-button">Đặt lại</button>
+      </div><p id="form-status" role="status" aria-live="polite">Chọn đủ ba ảnh để bắt đầu.</p></div>
+    </form>
+    <div class="alert alert-danger mb-0" id="error-message" role="alert" hidden></div>
+  </section>
+  <section id="results" hidden aria-labelledby="results-title" aria-live="polite">
+    <div class="section-head"><h2 id="results-title">Kết quả phân đoạn</h2><span id="run-info" class="run-info"></span></div>
+    <div class="row g-3 g-xl-4" id="comparison-results">
+      {% for key, title, badge in [('no_lcm','Không sử dụng LCM','Không LCM'), ('with_lcm','Có sử dụng LCM','Có LCM')] %}
+      <div class="col-12 col-lg-6"><article class="comparison-card {{ 'with-lcm' if key == 'with_lcm' else '' }}" aria-labelledby="title-{{ key }}">
+        <div class="comparison-header"><h3 id="title-{{ key }}">{{ title }}</h3><span class="variant-badge">{{ badge }}</span></div>
+        <div class="comparison-body">
+          <figure class="result-figure"><figcaption><span>Mask dự đoán</span><a id="download-mask-{{ key }}" class="download-link" download="loec_{{ key }}_mask.png" aria-label="Tải mask {{ title | lower }}">Tải mask <span aria-hidden="true">↓</span></a></figcaption><div class="result-image"><img id="mask-{{ key }}" class="prediction-mask" alt="Mask dự đoán — {{ title }}"></div></figure>
+          <figure class="result-figure"><figcaption><span>Overlay trên ảnh truy vấn</span><a id="download-overlay-{{ key }}" class="download-link" download="loec_{{ key }}_overlay.png" aria-label="Tải overlay {{ title | lower }}">Tải overlay <span aria-hidden="true">↓</span></a></figcaption><div class="result-image overlay-image"><img id="overlay-{{ key }}" class="prediction-overlay" alt="Overlay — {{ title }}"></div></figure>
+        </div>
+      </article></div>
+      {% endfor %}
+    </div>
+    <section id="iou-panel" class="evaluation-panel" hidden aria-labelledby="iou-title"><div class="section-head"><h3 id="iou-title">Chỉ số đánh giá</h3><span class="muted-note">Đối chiếu Ground Truth</span></div><div class="table-responsive"><table class="table mb-0"><thead><tr><th scope="col">Phương pháp</th><th scope="col">IoU</th></tr></thead><tbody id="iou-body"></tbody></table></div></section>
+  </section>
+</main>
+</body>
+</html>
