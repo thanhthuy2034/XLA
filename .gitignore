@@ -10,11 +10,10 @@ __pycache__/
 .ipynb_checkpoints/
 .cache/
 
-# Datasets, sample image data, and model checkpoints (provided separately)
+# Datasets and model checkpoints (provided separately)
 data/
 dataset/
 datasets/
-demo_samples/
 weights/
 checkpoints/
 *.pth
