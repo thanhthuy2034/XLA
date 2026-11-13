@@ -1,0 +1,36 @@
+{
+  "sources": {
+    "fss_eiffel": "https://github.com/HKUSTCV/FSS-1000/tree/master/imgs/example/support",
+    "penn_fudan": "https://github.com/Charan-Sammeta/2D_polygon_semantic_segmentation/tree/b08f7ba46fe82eec32744146d6dd7360df03a651/archive/PennFudanPed",
+    "penn_fudan_original": "https://www.cis.upenn.edu/~jshi/ped_html/"
+  },
+  "cases": [
+    {
+      "folder": "eiffel_tower",
+      "source": "fss_eiffel",
+      "support_image": "1.jpg",
+      "support_mask": "1.png",
+      "query_image": "4.jpg",
+      "query_mask": "4.png",
+      "mask_conversion": "all nonzero source labels -> 255; background -> 0"
+    },
+    {
+      "folder": "pedestrians_fudan",
+      "source": "penn_fudan",
+      "support_image": "FudanPed00001.png",
+      "support_mask": "FudanPed00001_mask.png",
+      "query_image": "FudanPed00002.png",
+      "query_mask": "FudanPed00002_mask.png",
+      "mask_conversion": "all nonzero source labels -> 255; background -> 0"
+    },
+    {
+      "folder": "pedestrians_penn",
+      "source": "penn_fudan",
+      "support_image": "PennPed00015.png",
+      "support_mask": "PennPed00015_mask.png",
+      "query_image": "PennPed00016.png",
+      "query_mask": "PennPed00016_mask.png",
+      "mask_conversion": "all nonzero source labels -> 255; background -> 0"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-"""Preprocessing and real, paired inference using the notebook checkpoint."""
+"""Preprocessing and three-way inference using the notebook checkpoint."""
 import base64
 import inspect
 import io
@@ -23,6 +23,13 @@ DEFAULT_CHECKPOINT = 'last_loec_model.pth'
 CHECKPOINT_NAMES = {'last_loec_model.pth', 'best_loec_model.pth'}
 MASK_K = 0.6
 MASK_B = 0.7
+VARIANTS = {
+    "no_lcm": dict(use_mask_correction=False),
+    "lcm_cosine": dict(use_mask_correction=True, lcm_method="cosine",
+                       lcm_k=3, lcm_update_mode="additive"),
+    "lcm_euclidean": dict(use_mask_correction=True, lcm_method="euclidean",
+                          lcm_k=1, lcm_update_mode="multiplicative"),
+}
 MAX_FILE_BYTES = 10 * 1024 * 1024
 Image.MAX_IMAGE_PIXELS = 20_000_000
 
@@ -33,9 +40,13 @@ def extract_checkpoint(checkpoint_name=None):
     if name not in CHECKPOINT_NAMES:
         raise ValueError('LOEC_CHECKPOINT chỉ nhận last_loec_model.pth hoặc best_loec_model.pth.')
     archive_path = ROOT / 'results.zip'
-    if not archive_path.is_file():
-        raise FileNotFoundError(f'Không tìm thấy ZIP checkpoint mới: {archive_path}.')
     target = ROOT / 'weights' / name
+    if not archive_path.is_file():
+        if target.is_file():
+            return target
+        raise FileNotFoundError(
+            f'Chưa có checkpoint. Tải {name} từ Output của notebook Kaggle, '
+            f'đặt tại {target}; hoặc đặt results.zip tại {ROOT}.')
     with zipfile.ZipFile(archive_path) as archive:
         try:
             member = archive.getinfo(name)
@@ -118,18 +129,20 @@ def foreground_iou(prediction, target):
 
 
 class InferenceService:
-    def __init__(self):
+    def __init__(self, checkpoint_stream=None, checkpoint_name=None):
         self.lock = threading.Lock()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         if self.device.type == 'cpu':
             torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
-        self.checkpoint_path = extract_checkpoint()
+        self.checkpoint_path = Path(checkpoint_name or 'selected_model.pth') if checkpoint_stream is not None else extract_checkpoint()
         self.model = SSP_MatchingNet(pretrained=False, refine=False)
         kwargs = {'map_location': self.device}
         if 'weights_only' in inspect.signature(torch.load).parameters:
             kwargs['weights_only'] = True
+        elif checkpoint_stream is not None:
+            raise RuntimeError('Cần PyTorch hỗ trợ weights_only=True để nạp tệp đã chọn.')
         try:
-            state = torch.load(self.checkpoint_path, **kwargs)
+            state = torch.load(checkpoint_stream if checkpoint_stream is not None else self.checkpoint_path, **kwargs)
             self.load_result = self.model.load_state_dict(state, strict=True)
         except Exception as exc:
             raise RuntimeError(f'Không thể nạp checkpoint {self.checkpoint_path.name} bằng strict=True: {exc}') from exc
@@ -145,8 +158,8 @@ class InferenceService:
         outputs, shapes = {}, {}
         started = time.perf_counter()
         with self.lock, torch.inference_mode():
-            for name, use_lcm in [('no_lcm', False), ('with_lcm', True)]:
-                score = self.model([s], [mask_tensor], q, use_mask_correction=use_lcm,
+            for name, config in VARIANTS.items():
+                score = self.model([s], [mask_tensor], q, **config,
                                    mask_k=MASK_K, mask_b=MASK_B, q_ori=q_ori, use_lem=False)
                 if not isinstance(score, torch.Tensor) or tuple(score.shape) != (1, 2, *SIZE) or not torch.isfinite(score).all():
                     raise RuntimeError('Mô hình trả về score sai kích thước hoặc chứa NaN/Inf.')

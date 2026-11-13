@@ -14,6 +14,17 @@
   <span id="model-status" class="status-pill" role="status">Đang kiểm tra</span>
 </div></header>
 <main class="container dashboard-container">
+  <section class="checkpoint-panel" aria-labelledby="checkpoint-title">
+    <h2 id="checkpoint-title">Mô hình đã huấn luyện</h2>
+    <p class="muted-note">Chọn tệp .pth đã tải từ Output của notebook Kaggle, sau đó bấm Nạp mô hình. Không cần chép vào thư mục dự án.</p>
+    <form id="checkpoint-form" class="checkpoint-controls">
+      <label for="checkpoint-file">Chọn tệp .pth</label>
+      <input class="form-control" type="file" id="checkpoint-file" name="checkpoint" required aria-describedby="checkpoint-message checkpoint-hint">
+      <button class="btn btn-outline-secondary" id="checkpoint-button" type="submit" disabled>Nạp mô hình</button>
+    </form>
+    <p id="checkpoint-message" class="muted-note" role="status" aria-live="polite">Đang kiểm tra mô hình…</p>
+    <p id="checkpoint-hint" class="muted-note">Hộp chọn hiển thị mọi tệp; hãy chọn file có đuôi .pth. Tối đa 256 MB. Tệp chọn được dùng đến khi tắt server; lần chạy sau bạn có thể chọn lại.</p>
+  </section>
   <section aria-labelledby="upload-title">
     <div class="section-head"><h1 id="upload-title">Dữ liệu đầu vào</h1><span class="muted-note">JPG, JPEG, PNG · Tối đa 10 MB / ảnh</span></div>
     <form id="predict-form">
@@ -21,15 +32,17 @@
         {% for key, number, title in [('support_image','01','Ảnh hỗ trợ'), ('support_mask','02','Mặt nạ hỗ trợ'), ('query_image','03','Ảnh truy vấn')] %}
         <div class="col-12 col-md-6 col-lg-4"><div class="upload-card">
           <div class="upload-title"><span class="step-number" aria-hidden="true">{{ number }}</span><h2>{{ title }}</h2></div>
+          <p class="input-help" id="help-{{ key }}">{{ {'support_image': 'Ảnh mẫu có đối tượng bạn muốn tìm, ví dụ ảnh X-quang có hai lá phổi.', 'support_mask': 'Mask của chính ảnh hỗ trợ: tô trắng đối tượng cần tìm, nền đen. Vị trí phải khớp ảnh hỗ trợ.', 'query_image': 'Ảnh mới cần phân đoạn. Mô hình sẽ tìm đối tượng cùng loại như trong ảnh hỗ trợ.'}[key] }}</p>
           <label class="drop-zone" data-input="{{ key }}" for="{{ key }}">
             <img class="preview" id="preview-{{ key }}" alt="Xem trước {{ title }}" hidden>
             <span class="drop-placeholder"><svg class="upload-symbol" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="choose-button">Chọn ảnh</span><span>hoặc kéo thả vào đây</span></span>
-            <input type="file" id="{{ key }}" name="{{ key }}" accept=".jpg,.jpeg,.png" aria-label="Chọn {{ title | lower }}" required>
+            <input type="file" id="{{ key }}" name="{{ key }}" accept=".jpg,.jpeg,.png" aria-label="Chọn {{ title | lower }}" aria-describedby="help-{{ key }}" required>
             <span class="change-image" aria-hidden="true">Đổi ảnh</span>
           </label><p class="file-name" id="name-{{ key }}">Chưa chọn ảnh</p>
         </div></div>
         {% endfor %}
       </div>
+      <details class="input-guide"><summary>Ví dụ: chọn bộ ảnh phổi có sẵn</summary><p>Trong thư mục <code>demo_samples/chest_xray/</code>, lần lượt chọn <code>support_image.png</code> → Ảnh hỗ trợ, <code>support_mask.png</code> → Mặt nạ hỗ trợ, <code>query_image.png</code> → Ảnh truy vấn. Mô hình dùng cặp ảnh hỗ trợ + mask để biết cần tìm vùng phổi trên ảnh truy vấn.</p><p>Nếu muốn tính IoU, chọn thêm <code>query_ground_truth.png</code> ở ô Mặt nạ tham chiếu. Đây là đáp án đúng của ảnh truy vấn, chỉ dùng chấm kết quả.</p></details>
       <div class="gt-box"><label for="query_gt">Mặt nạ tham chiếu <span>(Ground Truth)</span><span class="optional">Không bắt buộc</span></label><div class="gt-input"><input class="form-control" type="file" id="query_gt" name="query_gt" accept=".jpg,.jpeg,.png"><span id="name-query_gt" class="visually-hidden" aria-live="polite">Chưa chọn ảnh</span></div></div>
       <div class="controls"><div class="action-buttons">
         <button type="submit" class="btn btn-primary" id="predict-button" disabled><span class="spinner-border spinner-border-sm" id="spinner" hidden aria-hidden="true"></span><span id="button-label">Bắt đầu phân đoạn</span><svg id="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -41,8 +54,8 @@
   <section id="results" hidden aria-labelledby="results-title" aria-live="polite">
     <div class="section-head"><h2 id="results-title">Kết quả phân đoạn</h2><span id="run-info" class="run-info"></span></div>
     <div class="row g-3 g-xl-4" id="comparison-results">
-      {% for key, title, badge in [('no_lcm','Không sử dụng LCM','Không LCM'), ('with_lcm','Có sử dụng LCM','Có LCM')] %}
-      <div class="col-12 col-lg-6"><article class="comparison-card {{ 'with-lcm' if key == 'with_lcm' else '' }}" aria-labelledby="title-{{ key }}">
+      {% for key, title, badge in [('no_lcm','Không sử dụng LCM','Baseline'), ('lcm_cosine','LCM Cosine','K=3 · Cộng'), ('lcm_euclidean','LCM Euclidean','K=1 · Nhân')] %}
+      <div class="col-12 col-xl-4"><article class="comparison-card {{ 'with-lcm' if key != 'no_lcm' else '' }}" aria-labelledby="title-{{ key }}">
         <div class="comparison-header"><h3 id="title-{{ key }}">{{ title }}</h3><span class="variant-badge">{{ badge }}</span></div>
         <div class="comparison-body">
           <figure class="result-figure"><figcaption><span>Mask dự đoán</span><a id="download-mask-{{ key }}" class="download-link" download="loec_{{ key }}_mask.png" aria-label="Tải mask {{ title | lower }}">Tải mask <span aria-hidden="true">↓</span></a></figcaption><div class="result-image"><img id="mask-{{ key }}" class="prediction-mask" alt="Mask dự đoán — {{ title }}"></div></figure>

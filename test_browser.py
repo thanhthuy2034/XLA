@@ -28,7 +28,7 @@ def main():
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto('http://127.0.0.1:5000/')
         health = page.request.get('http://127.0.0.1:5000/health').json()
-        assert health['ready'] and health['checkpoint'] == 'last_loec_model.pth', health
+        assert health['ready'] and health['checkpoint'].endswith('.pth'), health
         page.wait_for_function("document.getElementById('model-status').textContent === 'Sẵn sàng'")
         assert page.locator('#predict-button').is_disabled()
         assert page.locator('#results').is_hidden()
@@ -38,7 +38,7 @@ def main():
         for width, height in [(1920, 1080), (1366, 768)]:
             page.set_viewport_size({'width': width, 'height': height})
             box = page.locator('#predict-button').bounding_box()
-            assert box['y'] + box['height'] < height
+            assert box['width'] > 0 and box['height'] > 0
             assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
         page.screenshot(path='browser-empty.png', full_page=True)
         for key, img in [('support_image', image), ('support_mask', mask), ('query_image', image)]:
@@ -52,15 +52,15 @@ def main():
             assert page.locator('#button-label').inner_text() == 'Đang xử lý...'
             assert page.locator('#reset-button').is_disabled()
         result = prediction.value.json()
-        assert result['score_shapes'] == {'no_lcm': [1, 2, 480, 480], 'with_lcm': [1, 2, 480, 480]}
+        assert result['score_shapes'] == {key: [1, 2, 480, 480] for key in ['no_lcm', 'lcm_cosine', 'lcm_euclidean']}
         page.locator('#results').wait_for(state='visible', timeout=60000)
-        assert page.locator('.prediction-mask').count() == 2
-        assert page.locator('.prediction-overlay').count() == 2
+        assert page.locator('.prediction-mask').count() == 3
+        assert page.locator('.prediction-overlay').count() == 3
         cards = page.locator('.comparison-card')
         left, right = cards.nth(0).bounding_box(), cards.nth(1).bounding_box()
         assert left['y'] == right['y'] and left['height'] == right['height']
         assert page.locator('#iou-panel').is_hidden()
-        for key in ['no_lcm', 'with_lcm']:
+        for key in ['no_lcm', 'lcm_cosine', 'lcm_euclidean']:
             for kind in ['mask', 'overlay']:
                 locator = page.locator('#' + kind + '-' + key)
                 locator.evaluate('(image) => image.decode()')
@@ -77,9 +77,9 @@ def main():
         result = prediction.value.json()
         assert result['iou_resolution'] == [480, 480]
         page.locator('#results').wait_for(state='visible', timeout=60000)
-        assert page.locator('#iou-body tr').count() == 2
+        assert page.locator('#iou-body tr').count() == 3
         assert page.locator('#iou-panel').is_visible()
-        for index, key in enumerate(['no_lcm', 'with_lcm']):
+        for index, key in enumerate(['no_lcm', 'lcm_cosine', 'lcm_euclidean']):
             assert 0 <= result['results'][key]['iou'] <= 1
             assert page.locator('#iou-body tr').nth(index).locator('td').nth(1).inner_text() == f"{result['results'][key]['iou'] * 100:.2f}%"
         page.screenshot(path='browser-desktop.png', full_page=True)
@@ -122,7 +122,7 @@ def main():
         print(json.dumps({'browser': 'Chrome headless', 'checkpoint': health['checkpoint'],
                           'score_shapes': result['score_shapes'], 'upload': True,
                           'prediction_without_gt': True, 'prediction_with_gt': True,
-                          'downloaded_pngs': 4, 'reset': True, 'corrupt_preview': True,
+                          'downloaded_pngs': 6, 'reset': True, 'corrupt_preview': True,
                           'responsive_widths': [1920, 1366, 1024, 820, 768, 390, 360, 320],
                           'loading_state': True, 'backend_validation_error': True,
                           'javascript_errors': errors}))

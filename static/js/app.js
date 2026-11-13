@@ -7,9 +7,18 @@ const requiredKeys = ['support_image', 'support_mask', 'query_image'];
 const previewURLs = new Map();
 let ready = false;
 let busy = false;
+let loadingCheckpoint = false;
+const checkpointForm = document.getElementById('checkpoint-form');
+const checkpointFile = document.getElementById('checkpoint-file');
+const checkpointButton = document.getElementById('checkpoint-button');
+const checkpointMessage = document.getElementById('checkpoint-message');
 
 function showError(message) { errorBox.textContent = message; errorBox.hidden = !message; }
-function updateButton() { button.disabled = busy || !ready || !requiredKeys.every(key => document.getElementById(key).files.length); }
+function updateButton() {
+  button.disabled = busy || loadingCheckpoint || !ready || !requiredKeys.every(key => document.getElementById(key).files.length);
+  checkpointFile.disabled = busy || loadingCheckpoint;
+  checkpointButton.disabled = busy || loadingCheckpoint || !checkpointFile.files.length;
+}
 function invalidateResults() { document.getElementById('results').hidden = true; }
 function chooseFile(input) {
   invalidateResults();
@@ -34,7 +43,7 @@ function chooseFile(input) {
   updateButton();
 }
 
-document.querySelectorAll('input[type=file]').forEach(input => input.addEventListener('change', () => chooseFile(input)));
+form.querySelectorAll('input[type=file]').forEach(input => input.addEventListener('change', () => chooseFile(input)));
 document.querySelectorAll('.drop-zone').forEach(zone => {
   ['dragenter', 'dragover'].forEach(type => zone.addEventListener(type, event => { event.preventDefault(); if (!busy) zone.classList.add('dragging'); }));
   ['dragleave', 'drop'].forEach(type => zone.addEventListener(type, event => { event.preventDefault(); zone.classList.remove('dragging'); }));
@@ -53,15 +62,44 @@ async function health() {
     ready = data.ready === true;
     badge.textContent = ready ? 'Sẵn sàng' : 'Chưa sẵn sàng';
     badge.className = `status-pill ${ready ? 'ready' : 'failed'}`;
-    if (!ready) showError(data.error || 'Mô hình chưa sẵn sàng.');
-  } catch (error) { ready = false; badge.textContent = 'Chưa sẵn sàng'; badge.className = 'status-pill failed'; showError('Không kết nối được backend. Kiểm tra Flask và tải lại trang.'); }
+    checkpointMessage.textContent = ready ? `Đã nạp: ${data.checkpoint} · ${data.device.toUpperCase()}` : 'Chưa có mô hình sẵn sàng. Chọn tệp checkpoint .pth ở trên để tiếp tục.';
+    if (!ready && data.error && !data.error.startsWith('Chưa có checkpoint')) checkpointMessage.textContent += ` ${data.error}`;
+  } catch (error) { ready = false; badge.textContent = 'Chưa sẵn sàng'; badge.className = 'status-pill failed'; checkpointMessage.textContent = 'Không kết nối được backend. Kiểm tra Flask và tải lại trang.'; showError(checkpointMessage.textContent); }
   updateButton();
 }
+
+checkpointFile.addEventListener('change', updateButton);
+checkpointForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (busy || loadingCheckpoint || !checkpointForm.reportValidity()) return;
+  const file = checkpointFile.files[0];
+  if (!/\.pth$/i.test(file.name) || !file.size || file.size > 256 * 1024 * 1024) {
+    checkpointMessage.textContent = 'Hãy chọn tệp .pth có dữ liệu, tối đa 256 MB.'; return;
+  }
+  const body = new FormData(checkpointForm);
+  loadingCheckpoint = true; updateButton(); showError(''); invalidateResults();
+  checkpointButton.textContent = 'Đang nạp…';
+  checkpointMessage.textContent = `Đang tải và nạp ${file.name}. Vui lòng chờ…`;
+  checkpointForm.setAttribute('aria-busy', 'true');
+  try {
+    const response = await fetch('/checkpoint', {method: 'POST', body});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Không thể nạp mô hình.');
+    await health();
+    statusText.textContent = requiredKeys.every(key => document.getElementById(key).files.length) ? 'Mô hình đã sẵn sàng. Bấm Bắt đầu phân đoạn.' : 'Mô hình đã sẵn sàng. Chọn đủ ba ảnh để bắt đầu.';
+  } catch (error) {
+    await health();
+    checkpointMessage.textContent = `${error.message} ${ready ? 'Mô hình trước đó vẫn sẵn sàng.' : 'Hãy chọn lại checkpoint phù hợp.'}`;
+  } finally {
+    loadingCheckpoint = false; checkpointButton.textContent = 'Nạp mô hình';
+    checkpointForm.setAttribute('aria-busy', 'false'); updateButton();
+  }
+});
 
 function render(data) {
   const iouBody = document.getElementById('iou-body'); iouBody.replaceChildren();
   const hasGT = data.results.no_lcm.iou !== null;
-  [['no_lcm', 'Không sử dụng LCM'], ['with_lcm', 'Có sử dụng LCM']].forEach(([key, title]) => {
+  [['no_lcm', 'Không sử dụng LCM'], ['lcm_cosine', 'LCM Cosine'], ['lcm_euclidean', 'LCM Euclidean']].forEach(([key, title]) => {
     ['mask', 'overlay'].forEach(kind => {
       document.getElementById(`${kind}-${key}`).src = data.results[key][kind];
       document.getElementById(`download-${kind}-${key}`).href = data.results[key][kind];
@@ -69,25 +107,25 @@ function render(data) {
     if (hasGT) { const row = document.createElement('tr'); [title, `${(data.results[key].iou * 100).toFixed(2)}%`].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.append(cell); }); iouBody.append(row); }
   });
   document.getElementById('iou-panel').hidden = !hasGT;
-  document.getElementById('run-info').textContent = `${data.elapsed_seconds.toFixed(2)} giây · ${data.device.toUpperCase()} · 2 lượt suy luận`;
+  document.getElementById('run-info').textContent = `${data.elapsed_seconds.toFixed(2)} giây · ${data.device.toUpperCase()} · 3 lượt suy luận`;
   const section = document.getElementById('results'); section.hidden = false;
   section.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'start'});
 }
 
 form.addEventListener('submit', async event => {
-  event.preventDefault(); if (busy || !ready || !form.reportValidity()) return;
+  event.preventDefault(); if (busy || loadingCheckpoint || !ready || !form.reportValidity()) return;
   const body = new FormData(form); busy = true; updateButton(); showError(''); invalidateResults();
   form.querySelectorAll('input,button[type=reset]').forEach(el => el.disabled = true);
   document.getElementById('spinner').hidden = false;
   document.getElementById('button-label').textContent = 'Đang xử lý...';
   document.getElementById('button-arrow').hidden = true;
   form.setAttribute('aria-busy', 'true');
-  statusText.textContent = 'Đang chạy hai lượt suy luận thực tế. Vui lòng chờ…';
+  statusText.textContent = 'Đang chạy ba lượt suy luận thực tế. Vui lòng chờ…';
   try {
     const response = await fetch('/predict', {method:'POST', body});
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Yêu cầu dự đoán thất bại.');
-    render(data); statusText.textContent = 'Đã hoàn tất hai lượt suy luận.';
+    render(data); statusText.textContent = 'Đã hoàn tất ba lượt suy luận.';
   } catch (error) { showError(error.message || 'Không thể kết nối backend.'); statusText.textContent = 'Phân đoạn chưa thành công.'; }
   finally {
     busy = false; form.querySelectorAll('input,button[type=reset]').forEach(el => el.disabled = false);
