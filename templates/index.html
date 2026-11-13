@@ -54,9 +54,9 @@
   <section id="results" hidden aria-labelledby="results-title" aria-live="polite">
     <div class="section-head"><h2 id="results-title">Kết quả phân đoạn</h2><span id="run-info" class="run-info"></span></div>
     <div class="row g-3 g-xl-4" id="comparison-results">
-      {% for key, title, badge in [('no_lcm','Không sử dụng LCM','Baseline'), ('lcm_cosine','LCM Cosine','K=3 · Cộng'), ('lcm_euclidean','LCM Euclidean','K=1 · Nhân')] %}
+      {% for key, title in [('no_lcm','Không sử dụng LCM'), ('lcm_cosine','LCM Cosine'), ('lcm_euclidean','LCM Euclidean')] %}
       <div class="col-12 col-xl-4"><article class="comparison-card {{ 'with-lcm' if key != 'no_lcm' else '' }}" aria-labelledby="title-{{ key }}">
-        <div class="comparison-header"><h3 id="title-{{ key }}">{{ title }}</h3><span class="variant-badge">{{ badge }}</span></div>
+        <div class="comparison-header"><h3 id="title-{{ key }}">{{ title }}</h3></div>
         <div class="comparison-body">
           <figure class="result-figure"><figcaption><span>Mask dự đoán</span><a id="download-mask-{{ key }}" class="download-link" download="loec_{{ key }}_mask.png" aria-label="Tải mask {{ title | lower }}">Tải mask <span aria-hidden="true">↓</span></a></figcaption><div class="result-image"><img id="mask-{{ key }}" class="prediction-mask" alt="Mask dự đoán — {{ title }}"></div></figure>
           <figure class="result-figure"><figcaption><span>Overlay trên ảnh truy vấn</span><a id="download-overlay-{{ key }}" class="download-link" download="loec_{{ key }}_overlay.png" aria-label="Tải overlay {{ title | lower }}">Tải overlay <span aria-hidden="true">↓</span></a></figcaption><div class="result-image overlay-image"><img id="overlay-{{ key }}" class="prediction-overlay" alt="Overlay — {{ title }}"></div></figure>
