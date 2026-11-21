@@ -1,0 +1,1671 @@
+PAGE 1
+ 
+ 
+HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG 
+KHOA CÔNG NGHỆ THÔNG TIN 1 
+ 
+BÁO CÁO BÀI TẬP LỚN 
+MÔN HỌC: XỬ LÝ ẢNH 
+ĐỀ TÀI 
+PHÂN ĐOẠN ẢNH ÍT MẪU XUYÊN MIỀN VỚI PHƯƠNG PHÁP LOEC 
+Giảng viên hướng dẫn: TS. Đào Thị Thúy Quỳnh 
+DANH SÁCH THÀNH VIÊN 
+Nguyễn Doãn Hợp  –  B23DCCN350 
+Dương Minh Thái  –  B23DCCN742 
+Lê Thanh Thủy  –  B23DCCN809 
+ 
+ 
+ 
+Hà Nội, 2026 
+
+PAGE 2
+LỜI CẢM ƠN 
+Nhóm chúng em xin chân thành cảm ơn TS. Đào Thị Thúy Quỳnh đã giảng dạy và 
+hướng dẫn nhóm trong quá trình thực hiện bài tập lớn môn Xử lý ảnh. Kiến thức từ học 
+phần đã giúp nhóm tiếp cận bài toán phân đoạn ảnh ít mẫu xuyên miền, tìm hiểu phương 
+pháp LoEC và xây dựng quy trình thực nghiệm trên Kaggle. 
+Qua quá trình chuẩn bị dữ liệu, huấn luyện mô hình và phân tích kết quả, nhóm có 
+cơ hội vận dụng kiến thức đã học vào một bài toán cụ thể. Nhóm cũng học được cách tổ 
+chức thí nghiệm để các cấu hình được đánh giá trên cùng dữ liệu và cách trình bày những 
+khác biệt so với kết quả công bố. 
+Nhóm trân trọng những góp ý của cô để hoàn thiện báo cáo và tiếp tục cải thiện 
+quy trình thực nghiệm. Nhóm chúng em xin chân thành cảm ơn cô. 
+
+PAGE 3
+MỤC LỤC 
+PHÂN CHIA CÔNG VIỆC...............................................................................................5 
+CHƯƠNG 1. GIỚI THIỆU BÀI TOÁN.......................................................................... 6 
+1.1. Tổng quan về Cross-Domain Few-Shot Segmentation (CDFSS)........................... 6 
+1.1.1. Bài toán phân đoạn ảnh...................................................................................6 
+1.1.2. Few-Shot Segmentation..................................................................................6 
+1.1.3. Cross-Domain Few-Shot Segmentation......................................................... 7 
+1.2. Vấn đề nghiên cứu và hạn chế của các phương pháp hiện tại...............................10 
+1.2.1. Ảnh hưởng của sự khác biệt giữa miền nguồn và miền đích........................10 
+1.2.2. Hiện tượng suy giảm hiệu suất trong quá trình huấn luyện..........................10 
+1.2.3. Hạn chế của các phương pháp hiện tại......................................................... 11 
+1.3. Nguyên nhân suy giảm hiệu suất do Low-level Features......................................12 
+1.3.1. Vai trò của đặc trưng mức thấp trong mạng học sâu.....................................12 
+1.3.2. Phân tích bản đồ đặc trưng giữa miền nguồn và miền đích..........................13 
+1.3.3. Sự thay đổi của Low-level Features trong quá trình huấn luyện..................15 
+1.3.4. Mối liên hệ giữa Low-level Features và Loss Landscape............................ 16 
+1.4. Mục tiêu và đóng góp chính của bài báo...............................................................19 
+1.4.1. Mục tiêu nghiên cứu..................................................................................... 19 
+1.4.2. Phương pháp LoEC được đề xuất.................................................................19 
+1.4.3. Những đóng góp chính của nghiên cứu........................................................20 
+CHƯƠNG 2. KIẾN TRÚC VÀ TĂNG CƯỜNG ĐẶC TRƯNG TRONG LOEC.....22 
+2.1. Kiến trúc tổng thể LoEC....................................................................................... 22 
+2.1.1. Các thành phần chính và vai trò....................................................................22 
+2.1.2. Hai giai đoạn vận hành: huấn luyện và kiểm thử......................................... 22 
+2.2. Backbone và quá trình trích xuất đặc trưng.......................................................... 23 
+2.2.1. Đầu vào Support, Support Mask và Query...................................................23 
+2.2.2. Mạng ResNet-50 và quá trình trích xuất đặc trưng...................................... 23 
+2.3. Module so sánh đặc trưng (Comparison Module).................................................23 
+2.3.1. Vai trò và đầu vào của Comparison Module.................................................23 
+2.3.2. Tạo Coarse Score Map..................................................................................23 
+2.4. Module tăng cường đặc trưng tầng thấp (LEM)................................................... 24 
+2.4.1. Mục tiêu và vị trí của LEM...........................................................................24 
+2.4.2. Random Convolution trên Low-level Support Features...............................24 
+2.4.3. FFT, phổ biên độ, phổ pha và IFFT.............................................................. 24 
+
+PAGE 4
+2.4.4. Luồng xử lý LEM trong quá trình huấn luyện..............................................25 
+2.5. Kết luận chương và chuyển tiếp sang giai đoạn kiểm thử.................................... 26 
+CHƯƠNG 3. HIỆU CHỈNH VÀ DỰ ĐOÁN TRONG LOEC.....................................27 
+3.1. Low-level Calibration Module (LCM)..................................................................27 
+3.1.1. Động cơ khoa học.........................................................................................27 
+3.1.2. Vị trí trong hệ thống LoEC...........................................................................27 
+3.2. Confidence Map và lựa chọn Top-K Patches........................................................28 
+3.2.1. Bản đồ độ tin cậy (Confidence Map)............................................................28 
+3.2.2. Chia patch và độ tin cậy trung bình của patch..............................................28 
+3.2.3. Lựa chọn Top-K Patches neo........................................................................28 
+3.2.4. Phân tích ưu và nhược điểm của lựa chọn Top-K.........................................29 
+3.3. Cosine Similarity và hiệu chỉnh kết quả phân đoạn..............................................29 
+3.3.1. Độ tương đồng Cosine trong bài báo............................................................29 
+3.3.2. Công thức hiệu chỉnh điểm số dạng cộng (Bài báo).....................................30 
+3.3.3. Biến thể sử dụng khoảng cách Euclid và hiệu chỉnh dạng nhân...................30 
+3.3.4. Phân tích tác động của công thức dạng nhân................................................31 
+3.4. Quy trình tạo Segmentation Mask cuối cùng........................................................31 
+3.4.1. Luồng suy luận đầy đủ từ đầu đến cuối (1-way 1-shot)............................... 31 
+3.4.2. Công thức quyết định mặt nạ cuối cùng....................................................... 32 
+3.4.3. Chỉ số đánh giá tích lũy mIoU theo lớp chuẩn PATNet................................32 
+CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ..........................................................34 
+4.1. Môi trường thực nghiệm và dữ liệu.......................................................................35 
+4.1.1. Môi trường và cấu hình chung......................................................................35 
+4.1.2. Dữ liệu nguồn và các miền đích................................................................... 36 
+4.2. Huấn luyện mô hình đối chứng.............................................................................37 
+4.2.1. SSP và SSP kết hợp LEM.............................................................................37 
+4.2.2. Hàm mục tiêu và lựa chọn trọng số.............................................................. 37 
+4.3. Giao thức đánh giá và thiết kế ablation.................................................................38 
+4.3.1. Đánh giá theo cặp và cách tính mIoU...........................................................38 
+4.3.2. Ba yếu tố khảo sát trong LCM......................................................................38 
+4.4. Kết quả tổng thể và đóng góp của LEM, LCM.....................................................39 
+4.5. So sánh cosine và Euclidean................................................................................. 40 
+4.6. So sánh cập nhật cộng và nhân..............................................................................41 
+4.7. Ảnh hưởng của số vùng neo K..............................................................................42 
+4.8. Thảo luận, giới hạn và kết luận thực nghiệm........................................................42 
+
+PAGE 5
+4.9. Kết quả phân đoạn trực quan.................................................................................44 
+CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN.............................................. 48 
+5.1. Tổng kết kết quả nghiên cứu.................................................................................48 
+5.2. Những kết quả và đóng góp của nhóm..................................................................48 
+5.3. Hạn chế và khó khăn trong thực nghiệm...............................................................49 
+5.4. Hướng cải tiến và phát triển..................................................................................50 
+DANH MỤC TÀI LIỆU THAM KHẢO........................................................................51 
+
+PAGE 6
+PHÂN CHIA CÔNG VIỆC 
+ 
+Thành viên 
+Nhiệm vụ 
+Tỷ lệ đóng góp 
+Nguyễn Doãn Hợp - 
+B23DCCN350 
+Nhóm trưởng 
+Tìm hiểu về LEM 
+Báo cáo thực nghiệm 
+33.33% 
+Lê Thanh Thủy - 
+B23DCCN809 
+Tìm hiểu về Bài toán 
+Thiết đặt demo 
+Báo cáo 
+33.33% 
+Dương Minh Thái  –  
+B23DCCN742 
+Tìm hiểu LCM 
+Thiết lập thực nghiệm 
+Báo cáo 
+33.33% 
+ 
+
+PAGE 7
+CHƯƠNG 1. GIỚI THIỆU BÀI TOÁN 
+1.1. Tổng quan về Cross-Domain Few-Shot Segmentation (CDFSS) 
+1.1.1. Bài toán phân đoạn ảnh 
+Phân đoạn ảnh (Image Segmentation) là một trong những bài toán quan trọng trong lĩnh 
+vực xử lý ảnh và thị giác máy tính, với mục tiêu phân chia hình ảnh thành các vùng có ý 
+nghĩa dựa trên đặc điểm của đối tượng. Khác với bài toán phân loại ảnh, trong đó mô 
+hình chỉ xác định nhãn cho toàn bộ hình ảnh, phân đoạn ảnh yêu cầu dự đoán nhãn tại 
+từng điểm ảnh (pixel), từ đó xác định được vị trí, hình dạng và ranh giới của các đối 
+tượng cần nhận diện. 
+Trong những năm gần đây, sự phát triển của học sâu (Deep Learning), đặc biệt là mạng 
+nơ-ron tích chập (Convolutional Neural Network – CNN), đã mang lại những cải thiện 
+đáng kể về hiệu quả phân đoạn ảnh. Các kiến trúc tiêu biểu như Fully Convolutional 
+Network (FCN), U-Net và Pyramid Scene Parsing Network (PSPNet) cho phép mô hình 
+tự động học và trích xuất đặc trưng từ dữ liệu, hỗ trợ phân đoạn những đối tượng có hình 
+dạng và cấu trúc phức tạp. 
+Tuy nhiên, hiệu quả của các phương pháp học sâu thường phụ thuộc vào số lượng và chất 
+lượng dữ liệu huấn luyện. Đối với bài toán phân đoạn ảnh, quá trình gán nhãn đòi hỏi xác 
+định chính xác vùng đối tượng ở mức điểm ảnh. Công việc này thường tiêu tốn nhiều thời 
+gian và nhân lực, đặc biệt đối với các lĩnh vực chuyên biệt như ảnh y tế, ảnh viễn thám 
+hoặc những trường hợp có số lượng dữ liệu được gán nhãn hạn chế. 
+Để giải quyết những khó khăn trên, các phương pháp học với số lượng ít mẫu (Few-Shot 
+Learning) đã được nghiên cứu và phát triển. Trong lĩnh vực phân đoạn ảnh, hướng tiếp 
+cận này dẫn đến bài toán Few-Shot Segmentation (FSS), cho phép mô hình thực hiện 
+phân đoạn các đối tượng mới dựa trên một số lượng nhỏ ảnh mẫu đã được gán nhãn. 
+1.1.2. Few-Shot Segmentation 
+Few-Shot Segmentation (FSS) là bài toán phân đoạn những lớp đối tượng mới (Novel 
+Classes) chỉ dựa trên một số lượng rất nhỏ ảnh mẫu có nhãn. Thay vì yêu cầu một tập dữ 
+liệu lớn cho mỗi lớp đối tượng, FSS hướng đến việc tận dụng kiến thức đã học từ các lớp 
+cơ sở (Base Classes) để nhận diện và phân đoạn những lớp chưa xuất hiện trong quá trình 
+huấn luyện. 
+Trong FSS, dữ liệu thường được tổ chức theo cơ chế học theo nhiệm vụ (Episodic 
+Learning). Mỗi nhiệm vụ, được gọi là một episode, bao gồm hai thành phần chính: 
+●​ Tập hỗ trợ (Support Set): Gồm các ảnh mẫu và mặt nạ phân đoạn tương 
+ứng, cung cấp thông tin về đối tượng cần phân đoạn. 
+
+PAGE 8
+●​ Tập truy vấn (Query Set): Chứa ảnh cần được phân đoạn. Mặt nạ tham 
+chiếu của ảnh truy vấn được sử dụng trong quá trình huấn luyện hoặc đánh 
+giá. 
+Trong thiết lập 1-way K-shot, mô hình thực hiện phân đoạn một lớp đối tượng mục tiêu 
+dựa trên K ảnh hỗ trợ đã được gán nhãn. Hai trường hợp thường được sử dụng là 1-shot, 
+với một ảnh hỗ trợ, và 5-shot, với năm ảnh hỗ trợ. 
+Một episode trong thiết lập 1-way K-shot được biểu diễn như sau: 
+S = {(Is
+i, Ms
+i)} với i = 1, 2, ..., K 
+ Q = {(Iq, Mq)} 
+Trong đó: 
+●​ S là tập hỗ trợ. 
+●​ Q là tập truy vấn. 
+●​ Is
+i là ảnh hỗ trợ thứ i. 
+●​ Ms
+i là mặt nạ phân đoạn tương ứng với ảnh hỗ trợ thứ i. 
+●​ Iq là ảnh truy vấn. 
+●​ Mq là mặt nạ tham chiếu của ảnh truy vấn. 
+●​ K là số lượng ảnh hỗ trợ. 
+Trong mỗi episode, mô hình sử dụng thông tin từ tập hỗ trợ kết hợp với đặc trưng của ảnh 
+truy vấn để dự đoán mặt nạ phân đoạn của đối tượng mục tiêu. 
+Nhờ cơ chế này, FSS có khả năng xử lý các lớp đối tượng mới mà không cần xây dựng 
+một mô hình phân đoạn riêng với số lượng lớn dữ liệu huấn luyện cho từng lớp. 
+Tuy nhiên, trong thiết lập FSS truyền thống, dữ liệu huấn luyện và kiểm thử thường thuộc 
+cùng một miền dữ liệu hoặc có sự tương đồng về đặc điểm hình ảnh. Khi ảnh kiểm thử 
+thuộc một miền có phân phối dữ liệu khác biệt đáng kể so với miền huấn luyện, hiệu suất 
+phân đoạn có thể suy giảm. 
+1.1.3. Cross-Domain Few-Shot Segmentation 
+Cross-Domain Few-Shot Segmentation (CDFSS) là phần mở rộng của Few-Shot 
+Segmentation, trong đó dữ liệu huấn luyện và dữ liệu kiểm thử thuộc những miền dữ liệu 
+khác nhau. Mục tiêu của CDFSS là chuyển khả năng phân đoạn đã học từ miền nguồn 
+(Source Domain) sang miền đích (Target Domain), trong khi chỉ sử dụng một số ít ảnh có 
+nhãn thuộc miền đích. 
+Theo thiết lập bài toán được trình bày trong nghiên cứu gốc [1], miền nguồn và miền đích 
+được biểu diễn như sau: 
+
+PAGE 9
+Ds = (Xs, Ys) 
+Dt = (Xt, Yt) 
+Trong đó: 
+Ds và Dt lần lượt biểu diễn miền nguồn và miền đích. 
+Xs và Xt biểu diễn phân phối dữ liệu đầu vào của hai miền. 
+Ys và Yt biểu diễn không gian nhãn tương ứng. 
+Bài toán CDFSS được xây dựng trong điều kiện: 
+Xs ≠ Xt 
+Ys ∩ Yt = ∅ 
+Điều này có nghĩa là phân phối dữ liệu đầu vào giữa hai miền khác nhau, đồng thời các 
+lớp đối tượng trong miền đích chưa xuất hiện trong tập lớp huấn luyện của miền nguồn. 
+Ví dụ, một mô hình được huấn luyện trên ảnh các đối tượng tự nhiên như động vật, 
+phương tiện giao thông hoặc đồ vật, nhưng được sử dụng để phân đoạn vùng phổi trong 
+ảnh X-quang hoặc vùng tổn thương trong ảnh da liễu. Những loại ảnh này có sự khác biệt 
+lớn về màu sắc, kết cấu, độ tương phản và cấu trúc đối tượng. 
+Sự khác biệt về phân phối dữ liệu giữa các miền được gọi là dịch chuyển miền dữ liệu 
+(Domain Shift). Đây là một trong những thách thức quan trọng của CDFSS, bởi các đặc 
+trưng được học trên miền nguồn có thể không còn phù hợp khi áp dụng lên miền 
+đích.Trong quá trình tái hiện, nhóm sử dụng mô hình ResNet-50 kết hợp kiến trúc 
+SSP_MatchingNet và các thành phần của phương pháp LoEC.  
+
+PAGE 10
+ 
+Hình 1.1. Minh họa bài toán Cross-Domain Few-Shot Segmentation và sự thay đổi hiệu 
+suất phân đoạn theo số epoch huấn luyện 
+Cụ thể, Hình 1.1(a) mô tả hai thiết lập FSS và CDFSS. Trong FSS truyền thống, mô hình 
+được huấn luyện trên các lớp đối tượng cơ sở và kiểm thử trên những lớp đối tượng mới 
+thuộc cùng miền dữ liệu. Ngược lại, trong CDFSS, mô hình được huấn luyện trên miền 
+nguồn và cần thực hiện phân đoạn trên miền đích có phân phối dữ liệu khác biệt. Ví dụ 
+trong hình minh họa việc chuyển từ ảnh đối tượng tự nhiên sang ảnh X-quang ngực. 
+Hình 1.1(b) thể hiện sự thay đổi của chỉ số Mean Intersection over Union (mIoU) theo số 
+epoch huấn luyện đối với phương pháp CDFSS trước đây được khảo sát. Trục hoành biểu 
+diễn số epoch, trong khi trục tung biểu diễn giá trị mIoU, là chỉ số đánh giá mức độ tương 
+đồng giữa mặt nạ phân đoạn dự đoán và mặt nạ thực tế. Có thể nhận thấy hiệu suất phân 
+đoạn dao động trong những epoch đầu, đạt giá trị tương đối cao ở giai đoạn giữa, sau đó 
+giảm rõ rệt khi quá trình huấn luyện tiếp tục. Kết quả này cho thấy việc tăng số epoch 
+trên miền nguồn không nhất thiết giúp cải thiện khả năng phân đoạn trên miền đích. 
+Trong khi đó, Hình 1.1(c) biểu diễn kết quả của phương pháp được đề xuất trong nghiên 
+cứu. Chỉ số mIoU tăng nhanh ở giai đoạn đầu và nhìn chung tiếp tục được duy trì, cải 
+thiện trong những epoch tiếp theo. Điều này cho thấy phương pháp đề xuất có khả năng 
+hạn chế hiện tượng suy giảm hiệu suất khi tiếp tục huấn luyện trên miền nguồn. 
+Từ Hình 1.1 có thể thấy, thách thức của CDFSS không chỉ nằm ở việc phân đoạn các đối 
+tượng mới với số lượng ảnh mẫu hạn chế mà còn ở khả năng duy trì hiệu quả phân đoạn 
+
+PAGE 11
+khi dữ liệu huấn luyện và kiểm thử thuộc những miền khác nhau. Đây cũng là vấn đề 
+trọng tâm mà nghiên cứu được tái hiện trong báo cáo tập trung giải quyết. 
+1.2. Vấn đề nghiên cứu và hạn chế của các phương pháp hiện tại 
+1.2.1. Ảnh hưởng của sự khác biệt giữa miền nguồn và miền đích 
+Trong các mô hình phân đoạn ảnh dựa trên học sâu, quá trình huấn luyện được thực hiện 
+nhằm tối ưu các tham số của mạng để trích xuất đặc trưng và dự đoán chính xác nhãn của 
+từng điểm ảnh. Tuy nhiên, những đặc trưng được học thường chịu ảnh hưởng bởi phân 
+phối của dữ liệu huấn luyện. 
+Khi mô hình được huấn luyện trên một miền nguồn cụ thể, chẳng hạn ảnh tự nhiên, mạng 
+có xu hướng học các đặc điểm thường xuất hiện trong miền đó như màu sắc, kết cấu, độ 
+tương phản và cấu trúc đối tượng. Những đặc trưng này có thể phù hợp với dữ liệu có 
+phân phối tương tự miền nguồn nhưng không nhất thiết phản ánh đúng đặc điểm của các 
+miền dữ liệu khác. 
+Trong bài toán CDFSS, miền đích có thể bao gồm ảnh vệ tinh, ảnh da liễu hoặc ảnh 
+X-quang. Những loại ảnh này có sự khác biệt đáng kể so với ảnh tự nhiên, không chỉ về 
+đối tượng cần phân đoạn mà còn về đặc điểm thị giác ở mức điểm ảnh. 
+Khi áp dụng mô hình đã huấn luyện lên miền đích, sự thay đổi phân phối dữ liệu có thể 
+làm giảm chất lượng của các đặc trưng được trích xuất. Kết quả là mô hình có thể không 
+nhận diện được vùng tiền cảnh, xác định sai ranh giới đối tượng hoặc dự đoán những 
+vùng không liên quan. 
+Vấn đề này trở nên phức tạp hơn trong thiết lập Few-Shot, bởi số lượng ảnh hỗ trợ thuộc 
+miền đích rất hạn chế. Vì vậy, mô hình cần có khả năng khai thác hiệu quả những đặc 
+trưng đã học và duy trì khả năng tổng quát hóa trước sự thay đổi miền dữ liệu. 
+1.2.2. Hiện tượng suy giảm hiệu suất trong quá trình huấn luyện 
+Một hiện tượng đáng chú ý được phân tích trong nghiên cứu gốc [1] là hiệu suất phân 
+đoạn trên miền đích không nhất thiết tăng khi số epoch huấn luyện trên miền nguồn tiếp 
+tục tăng. 
+Thông thường, quá trình huấn luyện lâu hơn có thể giúp mô hình tối ưu tốt hơn trên dữ 
+liệu huấn luyện. Tuy nhiên, đối với CDFSS, việc cải thiện khả năng học trên miền nguồn 
+không đồng nghĩa với việc nâng cao hiệu quả phân đoạn trên những miền dữ liệu chưa 
+được quan sát. 
+Theo kết quả khảo sát trong bài báo, đối với một số miền đích có sự khác biệt lớn so với 
+miền nguồn, mô hình có thể đạt hiệu suất phân đoạn tốt nhất ngay ở những epoch đầu 
+
+PAGE 12
+tiên. Sau đó, khi quá trình huấn luyện tiếp tục, chỉ số mIoU trên miền đích có xu hướng 
+suy giảm đáng kể. 
+Trong một số thí nghiệm, hiệu suất tại epoch thứ 20 thậm chí thấp hơn so với epoch đầu 
+tiên. Hiện tượng này cho thấy mô hình có thể dần mất khả năng tổng quát hóa sang miền 
+đích mặc dù tiếp tục học từ dữ liệu miền nguồn. 
+Để tìm hiểu nguyên nhân, nghiên cứu tiến hành so sánh kết quả phân đoạn tại epoch 1 và 
+epoch 20. Kết quả cho thấy mô hình ở epoch 20 xuất hiện những sai lệch cơ bản, chẳng 
+hạn không xác định được vùng tiền cảnh hoặc tập trung vào những khu vực không tương 
+ứng với đối tượng cần phân đoạn. 
+Những quan sát này cho thấy vấn đề không chỉ nằm ở việc xác định chính xác đường 
+biên đối tượng mà còn có thể bắt nguồn từ quá trình trích xuất các đặc trưng không phù 
+hợp với miền đích. 
+Do đó, yêu cầu đặt ra là xây dựng một phương pháp có thể duy trì và cải thiện khả năng 
+tổng quát hóa của mô hình trong suốt quá trình huấn luyện, thay vì chỉ tìm kiếm một thời 
+điểm dừng phù hợp. 
+1.2.3. Hạn chế của các phương pháp hiện tại 
+Các nghiên cứu Few-Shot Segmentation trước đây đã đề xuất nhiều phương pháp nhằm 
+khai thác thông tin từ tập hỗ trợ để phân đoạn ảnh truy vấn. 
+Theo tổng quan được trình bày trong bài báo [1], các phương pháp FSS có thể được chia 
+thành hai nhóm tiếp cận chính. 
+Nhóm thứ nhất là các phương pháp dựa trên đặc trưng đại diện (Prototype-based 
+Methods). Những phương pháp này xây dựng đặc trưng đại diện từ ảnh hỗ trợ, sau đó sử 
+dụng chúng để xác định các vùng tương ứng trong ảnh truy vấn. Cách tiếp cận này giúp 
+giảm yêu cầu về dữ liệu huấn luyện cho những lớp đối tượng mới. 
+Nhóm thứ hai là các phương pháp dựa trên so khớp đặc trưng (Matching-based Methods). 
+Các phương pháp này tập trung phân tích mối quan hệ tương đồng giữa các đặc trưng tại 
+những vị trí không gian khác nhau của ảnh hỗ trợ và ảnh truy vấn, qua đó khai thác thông 
+tin chi tiết về cấu trúc của đối tượng. 
+Mặc dù đạt được nhiều kết quả tích cực trong FSS, những phương pháp trên vẫn gặp khó 
+khăn khi dữ liệu kiểm thử thuộc miền có phân phối khác biệt lớn so với dữ liệu huấn 
+luyện. 
+Đối với CDFSS, một số phương pháp như PATNet, ABCDFSS và DR-Adapter đã được 
+phát triển nhằm cải thiện khả năng tổng quát hóa hoặc thích nghi đặc trưng giữa các miền 
+dữ liệu. Tuy nhiên, hiện tượng suy giảm hiệu suất theo tiến trình huấn luyện và ảnh 
+
+PAGE 13
+hưởng cụ thể của các đặc trưng mức thấp vẫn là những vấn đề cần được phân tích sâu 
+hơn. 
+Một giải pháp có thể được áp dụng để hạn chế suy giảm hiệu suất là dừng huấn luyện 
+sớm (Early Stopping). Phương pháp này lựa chọn thời điểm dừng khi mô hình đạt kết quả 
+tốt trên dữ liệu đánh giá. 
+Tuy nhiên, thời điểm đạt hiệu suất tối ưu có thể khác nhau giữa các miền đích. Trong 
+CDFSS, mục tiêu là xây dựng một mô hình có khả năng hoạt động trên nhiều miền dữ 
+liệu mới, kể cả khi những miền này chưa được quan sát trong quá trình huấn luyện. Vì 
+vậy, việc lựa chọn riêng thời điểm dừng dựa trên hiệu suất của từng miền đích không phù 
+hợp với mục tiêu tổng quát hóa của bài toán. 
+Một hướng tiếp cận khác là cố định trọng số của các tầng nông (Freezing Shallow 
+Layers) trong mạng trích xuất đặc trưng. Cách thực hiện này hạn chế việc các tầng đầu 
+tiếp tục học những thông tin đặc thù của miền nguồn, qua đó có thể giảm mức suy giảm 
+hiệu suất khi áp dụng lên miền đích. 
+Tuy nhiên, việc cố định hoàn toàn các tầng nông cũng làm hạn chế khả năng tiếp tục học 
+những đặc trưng hữu ích từ dữ liệu huấn luyện. Vì vậy, phương pháp này chưa khai thác 
+đầy đủ tiềm năng của quá trình huấn luyện trên miền nguồn. 
+Từ những hạn chế trên, cần có một phương pháp vừa tăng cường khả năng tổng quát hóa 
+của các đặc trưng được học, vừa tận dụng được thông tin trực tiếp từ miền đích để cải 
+thiện kết quả phân đoạn trong giai đoạn dự đoán. 
+1.3. Nguyên nhân suy giảm hiệu suất do Low-level Features 
+1.3.1. Vai trò của đặc trưng mức thấp trong mạng học sâu 
+Trong các mạng nơ-ron tích chập, quá trình trích xuất đặc trưng thường được thực hiện 
+qua nhiều tầng xử lý. Những tầng đầu của mạng chủ yếu học các đặc trưng thị giác cơ 
+bản, trong khi các tầng sâu hơn kết hợp thông tin để hình thành các biểu diễn có mức độ 
+trừu tượng cao hơn. 
+Các đặc trưng mức thấp (Low-level Features) thường bao gồm thông tin về cạnh, đường 
+biên, góc, kết cấu, màu sắc và sự thay đổi cường độ sáng tại những vùng cục bộ của hình 
+ảnh. 
+Trong bài toán phân đoạn ảnh, những đặc trưng này đóng vai trò quan trọng vì chúng 
+cung cấp thông tin ban đầu về vị trí, hình dạng và ranh giới của đối tượng. Các tầng sâu 
+hơn sử dụng thông tin từ những tầng trước để hình thành biểu diễn ngữ nghĩa và đưa ra 
+kết quả phân đoạn cuối cùng. 
+
+PAGE 14
+Do có sự phụ thuộc giữa các tầng trong quá trình trích xuất đặc trưng, những sai lệch xuất 
+hiện ở các tầng nông có thể ảnh hưởng đến toàn bộ quá trình xử lý tiếp theo. 
+Nếu các tầng đầu không xác định được những thông tin thị giác có ích của đối tượng, các 
+tầng sâu hơn có thể không nhận được đầy đủ dữ liệu cần thiết để phân biệt vùng tiền cảnh 
+với hậu cảnh. 
+Trong nhiều nghiên cứu trước đây, đặc trưng mức thấp thường được xem là có khả năng 
+chuyển giao tương đối tốt giữa các miền dữ liệu do chúng mô tả những thuộc tính thị giác 
+cơ bản. 
+Tuy nhiên, nghiên cứu gốc [1] chỉ ra rằng những đặc trưng này vẫn có thể rất nhạy cảm 
+với hiện tượng dịch chuyển miền dữ liệu, đặc biệt khi quá trình huấn luyện khiến chúng 
+dần phụ thuộc vào những đặc điểm riêng của miền nguồn. 
+1.3.2. Phân tích bản đồ đặc trưng giữa miền nguồn và miền đích 
+Để khảo sát nguyên nhân gây suy giảm hiệu suất, nghiên cứu sử dụng mạng ResNet-50 
+làm bộ trích xuất đặc trưng và trực quan hóa các bản đồ đặc trưng (Feature Maps) tại 
+những giai đoạn khác nhau của mạng. 
+
+PAGE 15
+ 
+Hình 1.2. So sánh các bản đồ đặc trưng từ stage 1 đến stage 4 của ResNet-50 trên miền 
+nguồn và miền đích 
+Hình 1.2 trình bày ảnh truy vấn, mặt nạ phân đoạn tham chiếu (Ground Truth) và những 
+bản đồ đặc trưng được trích xuất tại bốn giai đoạn của mạng ResNet-50. Phần phía trên 
+thể hiện các mẫu thuộc miền nguồn, trong khi phần phía dưới thể hiện những mẫu thuộc 
+miền đích. 
+Đối với miền nguồn, các bản đồ đặc trưng ở giai đoạn 1 đã xuất hiện những phản hồi liên 
+quan đến cấu trúc và đường biên đối tượng. Khi thông tin tiếp tục được xử lý qua các giai 
+đoạn sâu hơn, mô hình có khả năng tập trung tốt hơn vào vùng tiền cảnh cần phân đoạn. 
+Ngược lại, đối với miền đích, đặc biệt là những dữ liệu có sự khác biệt lớn so với miền 
+nguồn, các bản đồ đặc trưng tại giai đoạn 1 và giai đoạn 2 không thể hiện rõ những cấu 
+trúc có ý nghĩa của đối tượng. Mặc dù vùng tiền cảnh có thể quan sát được từ ảnh gốc, 
+mô hình vẫn gặp khó khăn trong việc trích xuất các đặc trưng tương ứng ở những tầng 
+đầu. 
+
+PAGE 16
+Do các tầng sâu hơn tiếp nhận đầu vào từ những tầng trước, sự thiếu chính xác của các 
+đặc trưng mức thấp tiếp tục ảnh hưởng đến quá trình trích xuất đặc trưng mức cao. Kết 
+quả là các bản đồ đặc trưng tại giai đoạn 4 có thể tập trung vào những khu vực không 
+tương ứng với vùng tiền cảnh thực tế. 
+Từ những quan sát này, nghiên cứu đưa ra nhận định rằng sự suy giảm hiệu suất trong 
+CDFSS có thể bắt nguồn từ chính các tầng nông của mạng, nơi các đặc trưng mức thấp 
+được hình thành. 
+1.3.3. Sự thay đổi của Low-level Features trong quá trình huấn luyện 
+Để tìm hiểu mối liên hệ giữa quá trình huấn luyện và chất lượng đặc trưng được trích 
+xuất, nghiên cứu tiếp tục so sánh các bản đồ đặc trưng của mô hình tại epoch 1 và epoch 
+20. 
+ 
+Hình 1.3. So sánh các bản đồ đặc trưng của mô hình tại epoch 1 và epoch 20 ở những 
+stage khác nhau 
+Hình 1.3 thể hiện các bản đồ đặc trưng tương ứng với bốn giai đoạn của mạng tại hai thời 
+điểm huấn luyện khác nhau. 
+Tại epoch 1, bản đồ đặc trưng ở giai đoạn 1 vẫn thể hiện những vùng kích hoạt có khả 
+năng phân biệt tương đối rõ ràng. Những đặc trưng này cung cấp thông tin hữu ích cho 
+các tầng tiếp theo trong quá trình xác định vùng đối tượng. 
+Trong khi đó, tại epoch 20, các phản hồi đặc trưng ở tầng nông trở nên kém phân biệt 
+hơn. Sự thay đổi này tiếp tục ảnh hưởng đến những tầng sâu, khiến thông tin liên quan 
+đến vùng tiền cảnh không được biểu diễn hiệu quả như ở giai đoạn đầu. 
+Theo phân tích của nghiên cứu, nguyên nhân của hiện tượng trên là các tầng nông dần 
+tiếp nhận thêm những thông tin đặc thù của miền nguồn trong quá trình huấn luyện. 
+Khi mức độ phụ thuộc vào phân phối dữ liệu nguồn tăng lên, các đặc trưng được học có 
+thể trở nên kém phù hợp đối với những miền dữ liệu khác biệt. Điều này khiến mô hình 
+gặp khó khăn trong việc nhận diện các cấu trúc có ý nghĩa trên miền đích. 
+
+PAGE 17
+Như vậy, việc tiếp tục tối ưu mô hình trên miền nguồn có thể dẫn đến sự suy giảm khả 
+năng chuyển giao của các đặc trưng mức thấp. Đây là một trong những nguyên nhân quan 
+trọng khiến hiệu suất phân đoạn trên miền đích giảm khi số epoch huấn luyện tăng. 
+1.3.4. Mối liên hệ giữa Low-level Features và Loss Landscape 
+Để kiểm chứng những nhận định từ việc trực quan hóa bản đồ đặc trưng, nghiên cứu tiếp 
+tục phân tích mối liên hệ giữa các tầng mạng và độ sắc của bề mặt hàm mất mát (Loss 
+Landscape). 
+Loss Landscape mô tả sự thay đổi của giá trị hàm mất mát khi các tham số hoặc biểu diễn 
+của mô hình thay đổi. Trong nghiên cứu về khả năng tổng quát hóa, độ sắc của bề mặt 
+hàm mất mát được sử dụng để phân tích mức độ nhạy cảm của mô hình trước những biến 
+đổi của dữ liệu. 
+Một vùng cực tiểu sắc (Sharp Minimum) thường gắn với biểu diễn nhạy cảm hơn trước 
+các thay đổi nhỏ, trong khi một vùng cực tiểu phẳng (Flat Minimum) có thể phản ánh khả 
+năng ổn định tốt hơn khi dữ liệu bị nhiễu hoặc có sự dịch chuyển miền. 
+Trong nghiên cứu này, độ nhạy của mô hình được khảo sát thông qua việc áp dụng các 
+mức nhiễu khác nhau lên dữ liệu hoặc bản đồ đặc trưng, sau đó đo mức suy giảm hiệu 
+suất tương ứng. 
+
+PAGE 18
+ 
+Hình 1.4. Phân tích độ nhạy của mô hình trước nhiễu và mối liên hệ giữa các tầng đặc 
+trưng với độ sắc của Loss Landscape 
+Hình 1.4 gồm bốn thành phần minh họa mối quan hệ giữa Loss Landscape, các phép 
+nhiễu và mức suy giảm hiệu suất của mô hình. 
+Hình 1.4(a) minh họa sự khác biệt giữa vùng cực tiểu sắc và vùng cực tiểu phẳng. Theo 
+cách giải thích của nghiên cứu, biểu diễn gắn với vùng cực tiểu phẳng có khả năng ổn 
+định tốt hơn trước sự thay đổi phân phối dữ liệu, trong khi biểu diễn tại vùng cực tiểu sắc 
+có độ nhạy cao hơn đối với Domain Shift. 
+Hình 1.4(b) trình bày các ví dụ ảnh được bổ sung nhiễu tại mức điểm ảnh với những mức 
+phương sai khác nhau. Những phép nhiễu này được sử dụng nhằm mô phỏng sự thay đổi 
+trong dữ liệu đầu vào để khảo sát mức độ bền vững của mô hình. 
+Hình 1.4(c) thể hiện mức suy giảm hiệu suất khi áp dụng nhiễu đối với các mô hình tại 
+những epoch khác nhau. Kết quả cho thấy mô hình tại epoch 1 có mức suy giảm nhỏ hơn 
+so với epoch 10 và epoch 20 dưới cùng mức nhiễu. Điều này cho thấy khi quá trình huấn 
+luyện tiếp tục, mô hình có xu hướng trở nên nhạy cảm hơn trước sự thay đổi dữ liệu. 
+
+PAGE 19
+Hình 1.4(d) thể hiện ảnh hưởng của nhiễu khi được áp dụng lên các bản đồ đặc trưng tại 
+những giai đoạn khác nhau của mạng. Kết quả cho thấy việc gây nhiễu ở những tầng 
+nông dẫn đến mức suy giảm hiệu suất lớn hơn so với các tầng sâu dưới cùng mức nhiễu. 
+Những quan sát này củng cố nhận định rằng các đặc trưng mức thấp có liên hệ chặt chẽ 
+với độ nhạy của mô hình trước Domain Shift và hiện tượng bề mặt hàm mất mát trở nên 
+sắc hơn trong quá trình huấn luyện. 
+Để kiểm chứng thêm, nghiên cứu thực hiện thí nghiệm cố định trọng số của các tầng 
+nông trong ResNet-50 bằng những trọng số đã được huấn luyện trước trên ImageNet. Kết 
+quả được tổng hợp trong Bảng 1.1. 
+Bảng 1.1. Ảnh hưởng của việc cố định các tầng nông đến mIoU trung bình trên bốn miền 
+đích 
+ 
+Thiết lập huấn luyện 
+mIoU trung bình (%) 
+Huấn luyện giai đoạn 1, 2, 3, 4 
+56,64 
+Cố định giai đoạn 1, huấn luyện giai 
+đoạn 2, 3, 4 
+56,98 
+Cố định giai đoạn 1, 2; huấn luyện giai 
+đoạn 3, 4 
+57,21 
+ 
+Kết quả cho thấy mô hình cố định hai giai đoạn đầu đạt mIoU trung bình 57,21%, cao 
+hơn 0,57 điểm phần trăm so với trường hợp huấn luyện toàn bộ bốn giai đoạn. 
+Bên cạnh đó, kết quả khảo sát sự thay đổi mIoU theo số epoch trong nghiên cứu cho thấy 
+khi giai đoạn 2 được cố định, mô hình có xu hướng đạt hiệu suất tối ưu ở epoch muộn 
+hơn và mức suy giảm hiệu suất khi tiếp tục huấn luyện cũng chậm hơn. 
+Các kết quả này cho thấy việc hạn chế các tầng nông tiếp nhận quá nhiều thông tin đặc 
+thù của miền nguồn có thể góp phần cải thiện khả năng tổng quát hóa của mô hình trên 
+miền đích. 
+
+PAGE 20
+Từ những thí nghiệm trực quan và định lượng, nghiên cứu đưa ra kết luận rằng các đặc 
+trưng mức thấp có xu hướng học những thông tin phụ thuộc vào miền nguồn, làm tăng độ 
+nhạy của mô hình trước sự dịch chuyển miền dữ liệu khi quá trình huấn luyện kéo dài. 
+Sự phụ thuộc này có liên hệ với việc bề mặt hàm mất mát trở nên sắc hơn, khiến mô hình 
+dễ bị ảnh hưởng bởi những thay đổi trong phân phối dữ liệu và làm suy giảm chất lượng 
+phân đoạn trên miền đích. 
+Đây là cơ sở để phương pháp LoEC được đề xuất nhằm tăng cường độ bền vững của các 
+đặc trưng mức thấp và cải thiện khả năng phân đoạn ảnh trong bài toán CDFSS. 
+1.4. Mục tiêu và đóng góp chính của bài báo 
+1.4.1. Mục tiêu nghiên cứu 
+Xuất phát từ hiện tượng suy giảm hiệu suất trên miền đích khi quá trình huấn luyện trên 
+miền nguồn tiếp tục, nghiên cứu gốc [1] hướng đến việc phân tích nguyên nhân và đề 
+xuất phương pháp cải thiện khả năng tổng quát hóa của mô hình trong bài toán 
+Cross-Domain Few-Shot Segmentation. 
+Các mục tiêu nghiên cứu chính bao gồm: 
+Thứ nhất, phân tích hiện tượng hiệu suất phân đoạn trên miền đích đạt giá trị tốt ở những 
+epoch đầu tiên nhưng có thể suy giảm khi mô hình tiếp tục được huấn luyện trên miền 
+nguồn. 
+Thứ hai, làm rõ vai trò của các đặc trưng mức thấp đối với khả năng tổng quát hóa thông 
+qua việc trực quan hóa bản đồ đặc trưng và khảo sát độ nhạy của mô hình trước những 
+biến đổi của dữ liệu. 
+Thứ ba, xây dựng một phương pháp giúp tăng cường độ bền vững của các đặc trưng mức 
+thấp, đồng thời hạn chế việc mô hình học quá nhiều thông tin đặc thù của miền nguồn 
+trong quá trình huấn luyện. 
+Thứ tư, tận dụng thông tin trực tiếp từ miền đích trong giai đoạn kiểm thử để hiệu chỉnh 
+kết quả phân đoạn và hạn chế những sai lệch do sự suy giảm chất lượng đặc trưng. 
+Cuối cùng, đánh giá hiệu quả của phương pháp đề xuất trên nhiều bộ dữ liệu thuộc các 
+miền khác nhau nhằm kiểm chứng khả năng tổng quát hóa của mô hình. 
+1.4.2. Phương pháp LoEC được đề xuất 
+Để giải quyết những vấn đề trên, nghiên cứu đề xuất phương pháp Low-level 
+Enhancement and Calibration (LoEC), tập trung vào việc tăng cường và hiệu chỉnh các 
+đặc trưng mức thấp tại hai giai đoạn khác nhau của quá trình xử lý. 
+
+PAGE 21
+Phương pháp LoEC bao gồm hai module chính: Low-level Enhancement Module (LEM) 
+và Low-level Calibration Module (LCM). 
+Trong giai đoạn huấn luyện trên miền nguồn, Low-level Enhancement Module (LEM) 
+được sử dụng để tạo ra các biến đổi miền trên đặc trưng mức thấp. Module kết hợp tích 
+chập ngẫu nhiên (Random Convolution) với biến đổi Fourier nhằm thay đổi thông tin 
+miền và kết cấu, đồng thời duy trì thông tin quan trọng về cấu trúc và đường biên của đối 
+tượng. 
+Mục tiêu của LEM là hạn chế việc các tầng nông trở nên quá phụ thuộc vào miền nguồn, 
+từ đó tăng khả năng chống chịu của mô hình trước sự thay đổi phân phối dữ liệu. 
+Trong giai đoạn kiểm thử trên miền đích, Low-level Calibration Module (LCM) được sử 
+dụng để hiệu chỉnh kết quả phân đoạn sơ bộ. Module khai thác thông tin từ các đặc trưng 
+mức thấp của ảnh truy vấn, lựa chọn những vùng có độ tin cậy cao và sử dụng mối quan 
+hệ tương đồng giữa các vùng để điều chỉnh kết quả dự đoán. 
+Thông qua cơ chế này, LCM bổ sung trực tiếp thông tin của miền đích vào quá trình dự 
+đoán, góp phần hạn chế những sai lệch do đặc trưng mức thấp chưa biểu diễn đầy đủ 
+thông tin của dữ liệu mới. 
+Hai module được thiết kế theo hướng có thể tích hợp vào những mô hình phân đoạn hiện 
+có mà không yêu cầu thay đổi toàn bộ kiến trúc cơ sở. 
+Chi tiết về cấu trúc tổng thể của LoEC, quá trình trích xuất đặc trưng và nguyên lý hoạt 
+động của các module sẽ được trình bày trong Chương 2 và Chương 3. 
+1.4.3. Những đóng góp chính của nghiên cứu 
+Theo nội dung công bố trong bài báo [1], nghiên cứu có ba đóng góp chính. 
+Thứ nhất, phân tích hiện tượng suy giảm hiệu suất trong CDFSS. Nghiên cứu tập trung 
+làm rõ hiện tượng hiệu suất phân đoạn trên miền đích, đặc biệt với những miền có sự 
+khác biệt lớn so với miền nguồn, có thể đạt giá trị tốt ở những epoch đầu tiên nhưng suy 
+giảm đáng kể khi quá trình huấn luyện tiếp tục. 
+Thứ hai, chỉ ra vai trò của các đặc trưng mức thấp đối với khả năng tổng quát hóa. Thông 
+qua việc trực quan hóa bản đồ đặc trưng, khảo sát độ nhạy của bề mặt hàm mất mát và 
+thực hiện thí nghiệm cố định các tầng nông, nghiên cứu cho thấy Low-level Features có 
+xu hướng tiếp nhận thông tin đặc thù của miền nguồn, làm tăng mức độ nhạy cảm trước 
+Domain Shift và ảnh hưởng tiêu cực đến chất lượng phân đoạn trên miền đích. 
+Thứ ba, đề xuất phương pháp LoEC với hai module tăng cường và hiệu chỉnh đặc trưng 
+mức thấp. LEM được sử dụng để tăng cường tính bền vững của đặc trưng trong quá trình 
+
+PAGE 22
+huấn luyện, trong khi LCM khai thác thông tin từ miền đích nhằm hiệu chỉnh kết quả 
+phân đoạn trong giai đoạn kiểm thử. 
+Để kiểm chứng hiệu quả của phương pháp, nghiên cứu tiến hành thực nghiệm trên bốn bộ 
+dữ liệu miền đích gồm FSS-1000, DeepGlobe, ISIC và Chest X-ray, với hai thiết lập 
+1-shot và 5-shot. 
+Theo kết quả được công bố trong Bảng 2 của bài báo, khi sử dụng backbone ViT-base, 
+phương pháp LoEC đạt mIoU trung bình 65,01% đối với thiết lập 1-shot và 70,43% đối 
+với thiết lập 5-shot. 
+So với phương pháp APSeg được sử dụng làm đối tượng so sánh, LoEC cải thiện mIoU 
+trung bình lần lượt 3,71 và 5,34 điểm phần trăm trong hai thiết lập tương ứng. 
+Những kết quả trên cho thấy việc tập trung xử lý các đặc trưng mức thấp là một hướng 
+tiếp cận có hiệu quả nhằm cải thiện khả năng tổng quát hóa của mô hình phân đoạn ảnh 
+giữa các miền dữ liệu khác nhau. 
+Trên cơ sở những nội dung lý thuyết và kết quả đã được công bố, nhóm lựa chọn tái hiện 
+phương pháp LoEC nhằm tìm hiểu nguyên lý hoạt động, triển khai các thành phần chính 
+của mô hình và đánh giá khả năng phân đoạn trên những miền dữ liệu khác nhau. 
+Trong quá trình tái hiện, nhóm sử dụng mạng ResNet-50 kết hợp kiến trúc 
+SSP_MatchingNet và module tăng cường đặc trưng mức thấp LEM. Mô hình được huấn 
+luyện trên miền nguồn PASCAL VOC và đánh giá theo thiết lập 1-way 1-shot trên bốn 
+miền đích gồm FSS-1000, DeepGlobe, ISIC-2018 và Chest X-ray. 
+Bên cạnh việc tái hiện quy trình huấn luyện và phân đoạn ảnh, nhóm thực hiện đánh giá 
+ba cấu hình suy luận trên cùng mô hình đã huấn luyện, bao gồm: không sử dụng LCM, sử 
+dụng LCM với độ tương đồng Cosine và sử dụng LCM với độ tương đồng Euclidean. 
+Qua đó, nhóm tiến hành so sánh ảnh hưởng của các phương pháp hiệu chỉnh đến chất 
+lượng phân đoạn trên những miền dữ liệu khác nhau. 
+Quá trình thực nghiệm đồng thời tập trung đối chiếu kết quả đạt được với nghiên cứu 
+gốc, làm rõ những khác biệt trong phương pháp triển khai và đánh giá khả năng tổng quát 
+hóa của mô hình khi chuyển giao giữa các miền dữ liệu. 
+Các nội dung chi tiết về kiến trúc mô hình, phương pháp triển khai, quy trình huấn luyện 
+và kết quả đánh giá sẽ được trình bày trong những chương tiếp theo. 
+ 
+
+PAGE 23
+CHƯƠNG 2. KIẾN TRÚC VÀ TĂNG CƯỜNG ĐẶC TRƯNG TRONG LOEC 
+2.1. Kiến trúc tổng thể LoEC 
+LoEC (Low-level Enhancement and Calibration) được xây dựng trên mô hình phân đoạn 
+ảnh ít mẫu, gồm mạng trích xuất đặc trưng (backbone), module so sánh (Comparison 
+Module) và hai module cắm và chạy: Low-level Enhancement Module (LEM) và 
+Low-level Calibration Module (LCM). Kiến trúc tổng thể được minh họa trong Hình 7 
+của bài báo. 
+ 
+ 
+Hình 2.1. Mô hình tổng quát của LoEC 
+2.1.1. Các thành phần chính và vai trò 
+Backbone trích xuất đặc trưng từ ảnh hỗ trợ (Support) và ảnh truy vấn (Query). 
+Comparison Module sử dụng các đặc trưng này cùng thông tin mặt nạ Support để tạo bản 
+đồ điểm phân đoạn sơ bộ (Coarse Score Map). LEM và LCM là hai đóng góp chính của 
+LoEC, đảm nhiệm tăng cường đặc trưng và hiệu chỉnh dự đoán ở những giai đoạn khác 
+nhau. 
+2.1.2. Hai giai đoạn vận hành: huấn luyện và kiểm thử 
+Trong giai đoạn huấn luyện trên miền nguồn (Source Domain), LEM tác động lên đặc 
+trưng tầng thấp của nhánh Support để cải thiện khả năng tổng quát hóa. Trong giai đoạn 
+kiểm thử trên miền đích (Target Domain), LCM nhận Coarse Score Map và đặc trưng 
+tầng thấp của Query để hiệu chỉnh dự đoán. Hai module không được áp dụng liên tiếp 
+trong cùng một lượt suy luận. 
+
+PAGE 24
+2.2. Backbone và quá trình trích xuất đặc trưng 
+2.2.1. Đầu vào Support, Support Mask và Query 
+Theo thiết lập 1-way K-shot, mỗi episode gồm K ảnh Support có mặt nạ gán nhãn và một 
+ảnh Query cần phân đoạn. Trong huấn luyện, nhãn Query được sử dụng để tính hàm mất 
+mát; trong kiểm thử, nhãn Query chỉ phục vụ đánh giá, không được cung cấp cho mô 
+hình khi dự đoán. 
+2.2.2. Mạng ResNet-50 và quá trình trích xuất đặc trưng 
+ResNet-50 (Residual Network 50 lớp) là một mạng nơ-ron tích chập (Convolutional 
+Neural Network – CNN) được thiết kế nhằm trích xuất đặc trưng từ hình ảnh. Điểm nổi 
+bật của kiến trúc này là việc sử dụng các khối dư (Residual Blocks) với kết nối tắt (Skip 
+Connections), cho phép truyền thông tin trực tiếp qua các tầng mạng, hỗ trợ quá trình lan 
+truyền gradient và cải thiện hiệu quả huấn luyện mạng sâu. 
+Thông qua các tầng xử lý, ResNet-50 trích xuất đặc trưng ở nhiều mức độ khác nhau. Các 
+tầng nông chủ yếu ghi nhận những thông tin thị giác cơ bản như cạnh, màu sắc, kết cấu 
+và đường biên, trong khi các tầng sâu hơn tổng hợp những thông tin này để hình thành 
+đặc trưng ngữ nghĩa của đối tượng. 
+Trong kiến trúc LoEC, ResNet-50 được sử dụng làm mạng trích xuất đặc trưng nền tảng 
+(Backbone), với trọng số được tiền huấn luyện trên bộ dữ liệu ImageNet. Theo mục 4.2 
+của bài báo, tác giả loại bỏ stage cuối cùng của Backbone và lớp ReLU cuối theo thiết lập 
+của mô hình cơ sở SSP nhằm hỗ trợ khả năng tổng quát hóa. 
+Ảnh Support và ảnh Query được đưa qua Backbone sử dụng chung trọng số (Shared 
+Backbone) để trích xuất đặc trưng. Trong giai đoạn huấn luyện, module LEM được áp 
+dụng tại các tầng nông trên nhánh Support nhằm tăng cường khả năng tổng quát hóa của 
+đặc trưng. Trong giai đoạn kiểm thử, đặc trưng tầng thấp của ảnh Query được truyền trực 
+tiếp đến module LCM để hỗ trợ hiệu chỉnh kết quả phân đoạn. Các đặc trưng từ 
+Backbone đồng thời được sử dụng bởi Comparison Module để tạo bản đồ điểm phân 
+đoạn sơ bộ (Coarse Score Map). 
+2.3. Module so sánh đặc trưng (Comparison Module) 
+2.3.1. Vai trò và đầu vào của Comparison Module 
+Comparison Module là thành phần của mô hình phân đoạn cơ sở, không phải một module 
+cải tiến mới của LoEC. Module nhận đặc trưng Support, đặc trưng Query và thông tin 
+Support Mask để đối chiếu vùng đối tượng đã biết với các vị trí cần dự đoán trong ảnh 
+Query. Trong thực nghiệm dùng baseline SSP, cơ chế so sánh gắn với các đặc trưng đại 
+diện (prototype) của đối tượng. 
+2.3.2. Tạo Coarse Score Map 
+Đầu ra của Comparison Module là bản đồ điểm S có hai kênh Foreground và Background 
+tại từng vị trí không gian. Đây là kết quả phân đoạn sơ bộ: trong huấn luyện, nó tham gia 
+
+PAGE 25
+tính hàm mất mát; trong kiểm thử, nó được chuyển sang LCM để hiệu chỉnh. Chi tiết 
+thuật toán nội bộ của SSP cần đối chiếu thêm với tài liệu SSP, bởi bài báo LoEC chỉ mô 
+tả Comparison Module ở mức kiến trúc tổng thể. 
+2.4. Module tăng cường đặc trưng tầng thấp (LEM) 
+2.4.1. Mục tiêu và vị trí của LEM 
+LEM giải quyết vấn đề đặc trưng tầng thấp dễ học thông tin đặc thù miền nguồn, 
+khiến mô hình suy giảm khả năng tổng quát hóa khi dữ liệu miền đích thay đổi. Module 
+chỉ được áp dụng trên đặc trưng Support trong quá trình huấn luyện, nhằm tạo nhiễu có 
+định hướng theo miền mà vẫn giữ cấu trúc đối tượng. 
+2.4.2. Random Convolution trên Low-level Support Features 
+Trong module Low-level Enhancement Module (LEM), Random Convolution 
+được áp dụng lên bản đồ đặc trưng tầng thấp (low-level feature map) của ảnh Support, 
+thay vì trực tiếp lên ảnh RGB đầu vào. Với đặc trưng F  có kích thước H × W × C, tác 
+giả sử dụng một lớp tích chập có bộ lọc ngẫu nhiên Θ để tạo ra đặc trưng F′ . Các trọng 
+số của bộ lọc được lấy mẫu từ phân phối chuẩn 𝒩(0, σ²), trong đó σ điều khiển mức độ 
+nhiễu loạn của phép biến đổi. 
+Đặc trưng sau Random Convolution được xác định theo công thức (3) của bài báo: 
+F′  = F  ∗ Θ                                           (3) 
+Trong đó, F  là đặc trưng Support ban đầu, F′  là đặc trưng sau biến đổi, Θ là bộ 
+lọc tích chập được khởi tạo ngẫu nhiên, còn ký hiệu ∗ biểu thị phép tích chập. Trong thiết 
+lập thực nghiệm ở mục 4.2, tác giả sử dụng kernel kích thước 3 × 3 và độ lệch chuẩn σ = 
+0,1. 
+Phép biến đổi này làm thay đổi đặc điểm kết cấu và thông tin liên quan đến miền dữ liệu, 
+tạo ra các biểu diễn Support đa dạng hơn trong quá trình huấn luyện. Nhờ vậy, mô hình 
+được khuyến khích giảm phụ thuộc vào những đặc trưng riêng của miền nguồn. Tuy 
+nhiên, Random Convolution có thể làm mờ một số chi tiết đường biên; do đó, LEM tiếp 
+tục sử dụng FFT và IFFT ở mục 2.4.3 nhằm giữ lại tốt hơn thông tin hình dạng và cấu 
+trúc không gian. 
+2.4.3. FFT, phổ biên độ, phổ pha và IFFT 
+Để hạn chế sự mất mát thông tin đường biên khi thực hiện Random Convolution, module 
+LEM tiếp tục xử lý các đặc trưng tầng thấp trong miền tần số bằng phép biến đổi Fourier 
+nhanh (Fast Fourier Transform – FFT). Theo bài báo, phổ biên độ (Amplitude Spectrum) 
+chủ yếu phản ánh thông tin miền và kết cấu, còn phổ pha (Phase Spectrum) chứa thông 
+tin quan trọng về hình dạng, cạnh và cấu trúc không gian. 
+Trước hết, với đặc trưng gốc F , phép biến đổi FFT được biểu diễn như sau: 
+AeiP = FFT(Fs)                                      (4) 
+
+PAGE 26
+Tiếp theo, Random Convolution được áp dụng lên F  để tạo đặc trưng đã biến đổi F′ . 
+Phép FFT trên đặc trưng này được xác định bởi: 
+A′eiP′ = FFT(F′s)                                     (5) 
+Trong đó, A và P lần lượt là phổ biên độ và phổ pha của đặc trưng gốc F ; A′ và P′ lần 
+lượt là phổ biên độ và phổ pha của đặc trưng đã biến đổi F′ . Để duy trì cấu trúc của đối 
+tượng, LEM kết hợp phổ biên độ A′ với phổ pha gốc P và sử dụng phép biến đổi Fourier 
+ngược (Inverse Fast Fourier Transform – IFFT): 
+Fs
+t = IFFT(A′eiP)                                     (6) 
+Đặc trưng tổng hợp F ᵗ sau IFFT được đưa vào các tầng tiếp theo của Backbone. Nhờ 
+kết hợp phổ biên độ đã biến đổi với phổ pha ban đầu, LEM tạo ra sự đa dạng về đặc trưng 
+miền trong khi hạn chế suy giảm thông tin hình dạng và đường biên. Các phép FFT và 
+IFFT được áp dụng lên feature map tầng thấp của ảnh Support, không phải trực tiếp lên 
+ảnh RGB gốc. 
+2.4.4. Luồng xử lý LEM trong quá trình huấn luyện 
+ 
+Hình 2.2. Luồng xử lý LEM trong quá trình huấn luyện 
+Trong một episode huấn luyện 1-way K-shot, ảnh Support được đưa qua stem 
+(layer0) để tạo đặc trưng mức thấp. Trong SSP_MatchingNet.forward() của notebook, 
+điều kiện self.training and use_lem quyết định có áp dụng feat_RCfourier_bias() lên đặc 
+trưng Support hay không. Ở đây LEM không thay trực tiếp giá trị RGB của ảnh, mà biến 
+đổi tensor feature trung gian trước khi đưa qua layer1, layer2 và layer3. 
+
+PAGE 27
+Hàm feat_RCfourier_bias() lần lượt (1) tạo random convolution kernel 3 × 3 theo từng 
+mẫu trong batch; (2) tính FFT2 của feature gốc và feature đã tích chập; (3) lấy biên độ 
+của phổ sau nhiễu nhưng giữ pha của phổ gốc; (4) tính IFFT2, lấy phần thực để thu 
+feature tăng cường; (5) chuyển kết quả về kiểu dữ liệu ban đầu. Trong notebook, FFT 
+chạy ở float32 để tránh lỗi tính toán khi AMP dùng half precision. 
+Đặc trưng Support đã tăng cường tiếp tục được dùng để tạo prototype 
+foreground/background từ Support Mask. Comparison Module đối chiếu prototype với 
+đặc trưng Query và tạo score map; CrossEntropyLoss được tính với Query Mask để cập 
+nhật các tầng còn tham gia gradient. LCM tắt trong pha train. Khi chuyển sang 
+model.eval(), LEM không chạy; quá trình kiểm thử có thể bật LCM để hiệu chỉnh score 
+map như mô tả ở Chương 3. 
+2.5. Kết luận chương và chuyển tiếp sang giai đoạn kiểm thử 
+Chương 2 làm rõ kiến trúc nền tảng và cơ chế LEM nhằm tăng khả năng tổng quát 
+hóa của đặc trưng khi huấn luyện trên miền nguồn. Chương 3 tiếp tục trình bày LCM: 
+tiếp nhận Score Map sơ bộ và đặc trưng tầng thấp của Query để tính Confidence Map, 
+lựa chọn Top-K patches, ước lượng độ tương đồng và tạo mặt nạ phân đoạn sau hiệu 
+chỉnh. 
+
+PAGE 28
+CHƯƠNG 3. HIỆU CHỈNH VÀ DỰ ĐOÁN TRONG LOEC 
+3.1. Low-level Calibration Module (LCM) 
+3.1.1. Động cơ khoa học 
+Bài báo chỉ ra rằng đặc trưng cấp thấp (low-level features như màu sắc, viền cạnh, kết 
+cấu vi mô) rất dễ bị “suy sụp” (collapse) khi mô hình đối mặt với miền đích, do hiện 
+tượng dịch chuyển miền (domain shift) nghiêm trọng. Sau khi ảnh đi qua toàn bộ encoder 
+sâu và bộ so sánh nguyên mẫu (comparison module), bản đồ điểm số phân đoạn thô S 
+thường bị mất đi các ranh giới chi tiết của ảnh đích. LCM được đề xuất nhằm bổ sung lại 
+thông tin này ngay trong quá trình suy luận (inference), bằng cách tận dụng trực tiếp đặc 
+trưng cấp thấp của chính ảnh query ở miền đích để hiệu chỉnh lại bản đồ điểm số. 
+3.1.2. Vị trí trong hệ thống LoEC 
+LCM hoạt động hoàn toàn ở pha kiểm thử (test/inference) trên miền đích; mô-đun không 
+chứa tham số học được và không đòi hỏi bất kỳ bước huấn luyện lại nào. 
+Đối ngẫu với LEM: LEM tác động lên đặc trưng support trong quá trình huấn luyện 
+nhằm làm phẳng loss landscape của tầng nông; còn LCM tác động trực tiếp lên bản đồ 
+điểm số dự đoán của ảnh query khi suy luận. 
+Các tham số siêu: số patch tin cậy K, hệ số tỉ lệ hiệu chỉnh w (mask_k trong code), và 
+ngưỡng bù trừ độ lệch β (mask_b trong code). Bài báo đặt K = 3, w = 0.6, β = 0.7; 3.1.3. 
+Các bước xử lý của LCM 
+Bảng 3.1. Các bước của mô-đun hiệu chỉnh LCM 
+Bước 
+Nội dung thực hiện 
+Công thức chuẩn 
+hóa 
+1 
+Tính bản đồ độ tin cậy tiền cảnh (Confidence 
+Map) từ điểm số thô S 
+Eq. (7) 
+2 
+Chia thành các patch không chồng lấn, tính độ 
+tin cậy trung bình từng patch 
+Eq. (8) 
+3 
+Chọn Top-K patch có độ tin cậy cao nhất làm 
+các vùng neo (anchor) 
+Eq. (9) 
+4 
+Tính độ tương đồng giữa các vùng neo với toàn 
+bộ các patch của ảnh query 
+Eq. (10) / (12)–(13) 
+5 
+Hiệu chỉnh điểm số tiền cảnh dựa trên độ lệch 
+tương đồng có trọng số 
+Eq. (11) / (14) 
+6 
+Áp dụng argmax theo kênh để sinh mặt nạ nhị 
+phân cuối cùng 
+Eq. (15) 
+  
+
+PAGE 29
+3.2. Confidence Map và lựa chọn Top-K Patches 
+3.2.1. Bản đồ độ tin cậy (Confidence Map) 
+Bộ so sánh nguyên mẫu trả về bản đồ điểm số thô S ∈ R^(H×W×2), trong đó S(i, j, 1) là 
+điểm số thuộc lớp tiền cảnh (foreground) và S(i, j, 0) là điểm số thuộc lớp hậu cảnh 
+(background) tại pixel (i, j). Bản đồ độ tin cậy C được định nghĩa là hiệu số giữa hai điểm 
+này: 
+ 
+(7) 
+Giá trị C(i, j) càng dương thì mô hình càng chắc chắn pixel đó thuộc về đối tượng tiền 
+cảnh; ngược lại C(i, j) âm cho thấy xu hướng thuộc về hậu cảnh. Trong notebook tái lập, 
+S chính là đầu ra out_1 (điểm cosine nhân hệ số 10 sau mô-đun SSP), đã được nội suy 
+bilinear lên kích thước ảnh đầu vào (480×480). Dòng code tương ứng: out_confidence = 
+out[:, 1] - out[:, 0]. 
+3.2.2. Chia patch và độ tin cậy trung bình của patch 
+Bản đồ độ tin cậy C được chia thành n patch không chồng lấn {P_1, P_2, …, P_n}. Độ 
+tin cậy trung bình của patch P_p được tính bằng trung bình cộng giá trị C trên toàn bộ các 
+pixel thuộc patch đó: 
+ 
+(8) 
+Việc lấy trung bình trong phạm vi patch giúp loại bỏ các điểm nhiễu cục bộ, đảm bảo 
+vùng được chọn đại diện cho một khối đối tượng ổn định thay vì một vài pixel cá biệt. 
+Kích thước patch chuẩn được cố định là 16×16 pixel (patch_size = 16): 
+Bảng 3.2. Kích thước ảnh và số vùng trong LCM 
+Nguồn tham chiếu 
+Kích thước 
+ảnh đầu 
+vào 
+Lưới 
+patch 
+(H//16 × 
+W//16) 
+Tổng số 
+patch N 
+Ma trận 
+khoảng cách 
+LoEC.py / Bài báo gốc 
+480 × 480 
+30 × 30 
+900 
+900 × 900 
+loec_reproduce_kaggle.ipy
+nb 
+480 × 480 
+30 × 30 
+900 
+900 × 900 
+  
+3.2.3. Lựa chọn Top-K Patches neo 
+Dựa trên độ tin cậy trung bình của các patch, LCM chọn ra K patch có điểm số cao nhất: 
+
+PAGE 30
+ 
+(9) 
+Tập hợp K patch này được xem là các vùng tiền cảnh đáng tin cậy nhất và đóng vai trò 
+làm các “vùng neo” (anchor patches) để dẫn dắt việc hiệu chỉnh. 
+Bảng 3.3. So sánh cách chọn vùng tham chiếu trong LCM 
+Thuộc tính lựa 
+chọn 
+Bài báo công bố 
+Mã nguồn tác giả LoEC.py và 
+Notebook 
+Số lượng patch 
+neo Top-K 
+K = 3 (mục 4.2 của bài 
+báo) 
+K = 1 (mặc định trong mã nguồn 
+mask_correction) 
+Kích thước mỗi 
+patch 
+16 × 16 pixel 
+16 × 16 pixel 
+Thuật toán thực 
+thi 
+arg max trên C̄_p 
+torch.topk(pconf.view(b, -1), k=1, 
+dim=1) 
+  
+Lưu ý: Mặc dù bài báo đề cập K = 3, file mã nguồn LoEC.py do chính tác giả công bố lại 
+đặt mặc định K = 1. Notebook tái lập tuân thủ nghiêm ngặt theo mã nguồn chính thức (K 
+= 1). 
+3.2.4. Phân tích ưu và nhược điểm của lựa chọn Top-K 
+Ưu điểm: Chỉ neo thông tin vào những vùng mô hình tự tin nhất, tránh lan truyền sai lệch 
+từ các vùng dự đoán không chắc chắn. 
+Nhược điểm: Nếu vùng neo bị chọn sai (ví dụ mô hình dự đoán nhầm một vùng hậu cảnh 
+nổi bật với độ tin cậy rất cao), toàn bộ quá trình hiệu chỉnh phía sau sẽ bị thiên lệch theo. 
+Với K = 1, rủi ro này cao hơn K = 3 do thiếu các neo khác để bù trừ cân bằng. 
+3.3. Cosine Similarity và hiệu chỉnh kết quả phân đoạn 
+3.3.1. Độ tương đồng Cosine trong bài báo 
+Trong bài báo gốc, với mỗi patch neo F'_{k_i}, tác giả tính độ tương đồng cosine với mọi 
+patch F'_m trích xuất từ đặc trưng cấp thấp đã nội suy F'_q ∈ R^(H×W×C): 
+ 
+(10) 
+Bản đồ Sim phản ánh mức độ tương đồng về mặt thị giác cấp thấp giữa mọi vùng trên 
+ảnh với vùng neo tiền cảnh. Những khu vực có màu sắc hoặc kết cấu tương tự vùng neo 
+sẽ có Sim cao, giúp khôi phục các phần đối tượng bị mô hình bỏ sót. 
+
+PAGE 31
+3.3.2. Công thức hiệu chỉnh điểm số dạng cộng (Bài báo) 
+Bài báo công bố công thức hiệu chỉnh dạng cộng tuyến tính (Eq. 11): 
+ 
+(11) 
+Trong đó w_k là trọng số điều tiết và β_k là ngưỡng chuẩn. Điểm hậu cảnh S(i, j, 0) được 
+giữ nguyên tuyệt đối. Hiệu số (Sim_k - β_k) đóng vai trò là lượng bù: khi Sim > β, điểm 
+tiền cảnh được tăng cường; khi Sim < β, điểm tiền cảnh bị giảm trừ. Bài báo chọn w = 
+0.6 và β = 0.7. 
+3.3.3. Biến thể sử dụng khoảng cách Euclid và hiệu chỉnh dạng nhân 
+Bảng 3.4. So sánh công thức hiệu chỉnh và cách triển khai 
+Khía cạnh 
+toán học 
+Mô tả trong bài báo 
+Cài đặt thực tế trong LoEC.py 
+và Notebook 
+Đặc trưng so 
+sánh 
+Đặc trưng cấp thấp F'_q từ 
+feature map, Cosine 
+similarity (Eq. 10) 
+Màu RGB trung bình của từng 
+patch 16×16 từ ảnh gốc q_ori; 
+tính khoảng cách Euclid bình 
+phương 
+Chuẩn hóa độ 
+tương đồng 
+Độ tương đồng Cosine thuộc 
+đoạn [−1, 1] 
+Chuẩn hóa Min-Max theo từng 
+hàng về [0, 1] rồi đảo chiều: Sim 
+= 1 − (d − d_min)/(d_max − 
+d_min + ε) 
+Cơ chế cập 
+nhật 
+Dạng cộng tuyến tính (Eq. 
+11): S + Σ w·(Sim − β) 
+Dạng nhân tỷ lệ (Multiplicative 
+Update): S + S·(Sim − β)·w với K 
+= 1 
+  
+Về mặt giải thuật toán học, quy trình chuẩn trong LoEC.py được đặc tả chính xác như 
+sau: 
+1. Tính ma trận khoảng cách Euclid bình phương giữa vector màu RGB trung bình của 
+các patch (N × N với N = 900): 
+ 
+(12) 
+2. Chuẩn hóa Min-Max trên từng hàng để đưa về thang đo độ tương đồng trong đoạn [0, 
+1]: 
+ 
+(13) 
+
+PAGE 32
+3. Hiệu chỉnh điểm tiền cảnh theo dạng nhân tỷ lệ (K = 1, w = 0.6, β = 0.7): 
+(1
+4) 
+3.3.4. Phân tích tác động của công thức dạng nhân 
+Với w = 0.6 và β = 0.7, khi Sim ∈ [0, 1] thì hệ số tỷ lệ nhân [1 + (Sim − β)·w] biến thiên 
+trong đoạn [0.58, 1.18]. Sự biến thiên cụ thể như sau: 
+Bảng 3.5. Ảnh hưởng của hệ số nhân đến điểm tiền cảnh 
+Độ tương 
+đồng Sim 
+Độ lệch (Sim 
+− β)·w 
+Hệ số nhân [1 + 
+(Sim − β)·w] 
+Tác động định tính (khi S_fg > 
+0) 
+1.00 
+(Trùng 
+khớp tối 
+đa) 
++0.18 
+1.18 
+Tăng 18% điểm số tiền cảnh 
+(thưởng vùng tương đồng) 
+0.85 (Khá 
+tương 
+đồng) 
++0.09 
+1.09 
+Tăng 9% điểm số tiền cảnh 
+0.70 
+(Ngưỡng 
+cân bằng 
+β) 
+0.00 
+1.00 
+Giữ nguyên điểm số, không thay 
+đổi 
+0.40 
+(Kém 
+tương 
+đồng) 
+−0.18 
+0.82 
+Giảm 18% điểm số tiền cảnh 
+0.00 
+(Khác biệt 
+tối đa) 
+−0.42 
+0.58 
+Giảm 42% điểm số tiền cảnh 
+(phạt mạnh vùng sai khác) 
+  
+Nhận xét lý thuyết: Khi S(i, j, 1) mang giá trị âm (do điểm cosine nhân 10 sau SSP chưa 
+qua Sigmoid/Softmax), công thức dạng nhân có thể tạo ra hiệu ứng đảo dấu (vùng có Sim 
+cao bị làm âm hơn). Tuy nhiên trên thực tế, tại các pixel có khả năng là tiền cảnh thì S(i, 
+j, 1) hầu hết đều dương, nên hiệu quả tổng thể vẫn cải thiện rõ rệt. 
+3.4. Quy trình tạo Segmentation Mask cuối cùng 
+3.4.1. Luồng suy luận đầy đủ từ đầu đến cuối (1-way 1-shot) 
+Bảng 3.6. Quy trình suy luận trong thiết lập 1-way 1-shot 
+
+PAGE 33
+Bước 
+Mô-đun thực hiện 
+Dữ liệu đầu vào 
+Kết quả đầu ra 
+1 
+Tiền xử lý 
+Support img/mask, 
+Query img 
+Resize 480×480, chuẩn hóa 
+ImageNet; trích xuất ảnh 
+query gốc q_ori cho LCM 
+2 
+Encoder ResNet-50 
+Ảnh support và 
+query 
+Feature maps F_s, F_q 
+(1024 kênh, kích thước 
+60×60 sau dilation ở layer3) 
+3 
+Prototype Masked 
+Pooling 
+F_s, Mask support 
+Prototype tiền cảnh FP và 
+hậu cảnh BP (vector 1024 
+chiều) 
+4 
+Cosine Matching thô 
+F_q, FP, BP 
+Bản đồ điểm số ban đầu 
+out_0 (2 kênh, kích thước 
+60×60) 
+5 
+Self-Support 
+Prototype (SSP) 
+F_q, out_0 
+Prototype tinh chỉnh FP_1, 
+BP_1 → Điểm số tinh chỉnh 
+out_1 (60×60) 
+6 
+Bilinear 
+Interpolation 
+out_1 (60×60) 
+Bản đồ điểm số S kích 
+thước đầy đủ (480×480) 
+7 
+Mô-đun LCM 
+S (480×480), q_ori 
+Bản đồ điểm số đã hiệu 
+chỉnh S' (kênh tiền cảnh 
+được cập nhật) 
+8 
+Argmax quyết định 
+S' (2 kênh) 
+Mặt nạ nhị phân dự đoán 
+cuối cùng M̂_q (kích thước 
+480×480) 
+  
+3.4.2. Công thức quyết định mặt nạ cuối cùng 
+Mặt nạ phân đoạn nhị phân M̂_q(i, j) được xác định bằng phép lấy chỉ số cực đại 
+(argmax) giữa điểm tiền cảnh và điểm hậu cảnh: 
+ 
+(15) 
+Vì điểm hậu cảnh S(i, j, 0) được giữ cố định, LCM tác động gián tiếp lên mặt nạ bằng 
+cách dịch chuyển ngưỡng quyết định phân loại tại từng pixel. 
+3.4.3. Chỉ số đánh giá tích lũy mIoU theo lớp chuẩn PATNet 
+Để đánh giá chính xác và khách quan theo chuẩn benchmark CD-FSS của thế giới, 
+notebook sử dụng phương pháp tính mIoU tích lũy theo từng lớp (Cumulative Class-wise 
+
+PAGE 34
+Intersection over Union), hoàn toàn trùng khớp với class Evaluator trong repo PATNet 
+gốc: 
+ 
+(16) 
+Trong đó E_c là tập hợp các episode thuộc lớp c, P_{e, c} là mặt nạ dự đoán và G_{e, c} 
+là mặt nạ nhãn thật (Ground Truth). Tổng giao và tổng hợp được cộng dồn trên toàn bộ 
+1000 episode của lớp đó rồi mới thực hiện phép chia, tránh hiện tượng chia cho 0 và sai 
+lệch do trung bình số học từng ảnh. 
+
+PAGE 35
+CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ 
+Chương này trình bày thực nghiệm phân đoạn ảnh ít mẫu xuyên miền trên Kaggle, sử 
+dụng code và kết quả đã lưu trong LoEC_trainofffical.ipynb. Nhóm huấn luyện riêng SSP 
+và SSP kết hợp LEM, sau đó khảo sát tám cấu hình LCM theo ba yếu tố: độ đo cosine 
+hoặc Euclidean bình phương (L2²), số vùng neo K ∈ {1, 3} và quy tắc cập nhật cộng 
+hoặc nhân. Tổng cộng mười cấu hình được đánh giá theo cặp trên cùng các episode của 
+bốn miền đích. 
+Nguồn số liệu: LoEC_trainofffical.ipynb, mục 4 (nhật ký dữ liệu), mục 5 (huấn luyện), 
+mục 6 (bảng mIoU và bảng chênh lệch) và mục 7 (hình phân đoạn). Đây là bản triển khai 
+có điều chỉnh; tên file không hàm ý toàn bộ cấu hình trùng với mã chính thức của tác giả. 
+Các kết quả từ LoEC_LCM_Ablation.ipynb không được gộp vào đối chứng của chương 
+này. 
+
+PAGE 36
+4.1. Môi trường thực nghiệm và dữ liệu 
+4.1.1. Môi trường và cấu hình chung 
+Nhóm triển khai bằng Python và PyTorch trên Kaggle Notebook. Nhật ký ghi nhận GPU 
+NVIDIA Tesla T4 với 15,64 GB VRAM. Backbone ResNet-50 được khởi tạo bằng trọng 
+số ImageNet-1K V1; seed được đặt bằng 42. Các tham số chính được giữ thống nhất giữa 
+hai lần huấn luyện. 
+Bảng 4.1. Cấu hình thực nghiệm 
+ 
+Tham số 
+Giá trị 
+Backbone 
+ResNet-50, ImageNet-1K V1 
+Thiết lập / kích thước ảnh 
+1-way 1-shot / 480 × 480 pixel 
+Số epoch / episode mỗi epoch 
+35 / 1.000 
+Batch size huấn luyện / kiểm 
+thử 
+4 / 1 
+Optimizer / learning rate 
+SGD; cosine 0,001 → 0,00001 
+Momentum / weight decay 
+0,9 / 0,0001 
+Tính toán GPU 
+AMP và GradScaler; Fourier dùng float32 
+refine / LCM khi huấn luyện 
+True / Tắt 
+Episode validation / kiểm thử 
+200 nguồn / 1.000 mỗi miền đích 
+Chọn checkpoint 
+IoU foreground gộp cao nhất trên validation nguồn 
+ 
+
+PAGE 37
+4.1.2. Dữ liệu nguồn và các miền đích 
+PASCAL VOC là miền nguồn, được chia 90% ảnh gốc để huấn luyện và 10% để xác 
+thực; các bản ghi từ cùng ảnh không nằm ở cả hai tập. FSS-1000, DeepGlobe, ISIC-2018 
+và Chest X-ray là bốn miền đích chỉ dùng để đánh giá, không dùng để cập nhật trọng số 
+hay chọn checkpoint huấn luyện. Bảng 4.2 ghi số bản ghi nhận diện trong lần chạy đã 
+lưu. 
+Bảng 4.2. Thống kê dữ liệu trong LoEC_trainofffical.ipynb 
+ 
+Bộ dữ liệu 
+Vai trò 
+Bản ghi 
+Lớp/nhóm 
+PASCAL VOC 
+Train / val 
+4.254 
+20 
+FSS-1000 
+Kiểm thử 
+2.400 
+240 
+DeepGlobe 
+Kiểm thử 
+23.183 
+6 
+ISIC-2018 
+Kiểm thử 
+2.594 
+3 
+Chest X-ray 
+Kiểm thử 
+704 
+1 
+ 
+Số bản ghi không đồng nghĩa với số ảnh gốc duy nhất. Một ảnh VOC có thể tạo nhiều 
+bản ghi theo lớp; các ô DeepGlobe cũng được ghi theo lớp mục tiêu. Nhật ký ghi nhận 
+3.803 bản ghi train và 451 bản ghi validation nguồn. Ba nhóm ISIC-2018 được dùng để 
+lấy mẫu episode, còn đầu ra mỗi episode vẫn là mặt nạ nhị phân. FSS-1000 sử dụng 240 
+lớp trong danh sách kiểm thử được nạp. 
+Bộ nạp chuyển ảnh sang RGB, đổi kích thước về 480 × 480 và chuẩn hóa theo ImageNet. 
+Mặt nạ dùng nội suy láng giềng gần nhất; nhãn 255 của VOC được bỏ qua khi tính loss 
+và đánh giá. Train có lật ngang 50%, crop ngẫu nhiên với xác suất 70% khi ảnh đủ lớn và 
+điều chỉnh sáng, tương phản, bão hòa nhẹ với xác suất 50%. Validation và kiểm thử chỉ 
+resize, không dùng các phép tăng cường này. Nhánh DeepGlobe ảnh thô quét toàn bộ 
+ảnh, bỏ giới hạn 150 ảnh; mỗi tile cần ít nhất hai lớp có tỷ lệ trên 4,8% và bị loại nếu tồn 
+tại lớp chiếm trên 1% nhưng không quá 4,8%. LCM dùng RGB query trước chuẩn hóa 
+ImageNet. 
+
+PAGE 38
+4.2. Huấn luyện mô hình đối chứng 
+4.2.1. SSP và SSP kết hợp LEM 
+Hai mô hình dùng cùng kiến trúc SSP_MatchingNet. Backbone giữ stem và 
+layer1–layer3, điều chỉnh dilation của layer3 và bỏ ReLU cuối của tầng này. Stem, layer1 
+được cố định tham số; BatchNorm được giữ ở chế độ đánh giá. Mô hình tạo prototype 
+tiền cảnh, hậu cảnh từ ảnh hỗ trợ, rồi sử dụng cơ chế Self-Support Prototype để cập nhật 
+dự đoán truy vấn. 
+SSP tắt LEM khi huấn luyện. SSP + LEM áp dụng LEM sau stem trên nhánh hỗ trợ: tích 
+chập ngẫu nhiên 3 × 3 có trọng số phân phối chuẩn N(0; 0,1²), không bias, tạo đặc trưng 
+biến đổi. Biên độ Fourier của đặc trưng mới được kết hợp với pha của đặc trưng ban đầu. 
+Phép Fourier được tính bằng float32. LEM chỉ hoạt động khi train; tên SSP + LEM trong 
+bảng kiểm thử chỉ mô hình đã được huấn luyện với LEM. 
+Hai lần huấn luyện đặt lại seed 42, dùng cùng khởi tạo backbone, phép chia dữ liệu 
+nguồn, SGD và ngân sách 35 epoch. Cả hai bật refine=True để tinh chỉnh SSP hai vòng. 
+Learning rate giảm theo CosineAnnealingLR từ 10⁻³ xuống 10⁻⁵. Tuy nhiên, cùng seed 
+chưa đủ để chứng minh mọi episode và phép tăng cường train trùng hoàn toàn; các cấu 
+hình được bảo đảm dùng cùng episode khi kiểm thử. 
+4.2.2. Hàm mục tiêu và lựa chọn trọng số 
+Với refine=True, mô hình trả về bốn nhánh: dự đoán truy vấn sau vòng hai, dự đoán sau 
+vòng một, tự phân đoạn query và tự phân đoạn support. Hàm mục tiêu là ℒ = 0,5ℒquery,2 
++ 0,5ℒquery,1 + 0,5ℒself + 0,5ℒsupport; mỗi thành phần dùng Cross-Entropy với 
+ignore_index=255. Mỗi epoch có 1.000 episode, batch size 4, tương ứng 250 bước cập 
+nhật; mỗi mô hình có 8.750 bước trong 35 epoch. 
+Sau mỗi epoch, mô hình được đánh giá trên 200 episode validation nguồn cố định, tắt 
+LEM và LCM. best.pth được chọn theo IoU foreground validation cao nhất; last.pth lưu 
+epoch cuối. Biến val_miou trong code thực tế bằng 100 × tổng giao / tổng hợp trên toàn 
+bộ episode validation, không phải trung bình IoU theo lớp. SSP chọn epoch 31 với 
+61,50%; SSP + LEM chọn epoch 26 với 58,64%. Phần kiểm thử nạp lại best.pth. Mô tả 
+cũ trong markdown của notebook về chọn theo loss train không phản ánh code này. 
+Bảng 4.3. Loss huấn luyện và checkpoint chọn theo IoU validation nguồn 
+ 
+Mô hình 
+Loss đầu 
+Loss cuối 
+Best val IoU 
+(%) 
+Epoch chọn 
+
+PAGE 39
+SSP 
+0,4414 
+0,2324 
+61,50 
+31 
+SSP + LEM 
+0,6739 
+0,3223 
+58,64 
+26 
+ 
+Loss train giảm ở cả hai mô hình. SSP + LEM có loss train cao hơn và IoU validation 
+nguồn tốt nhất thấp hơn SSP trong lần chạy này. Các chỉ số nguồn không thay thế đánh 
+giá khả năng tổng quát hóa trên miền đích; kết luận tiếp theo dựa trên mIoU kiểm thử của 
+từng miền. 
+4.3. Giao thức đánh giá và thiết kế ablation 
+4.3.1. Đánh giá theo cặp và cách tính mIoU 
+Mỗi miền có 1.000 episode 1-way 1-shot. Bộ lấy mẫu chọn một lớp rồi lấy hai bản ghi 
+khác nhau làm hỗ trợ và truy vấn; bộ sinh số ngẫu nhiên của episode i được khởi tạo bằng 
+42 + i. Mỗi episode được đưa qua SSP và SSP + LEM một lần. Tám cấu hình LCM hiệu 
+chỉnh các bản sao của cùng logits SSP + LEM, nhờ đó giữ nguyên trọng số, ảnh hỗ trợ, 
+ảnh truy vấn và dự đoán trước hiệu chỉnh. 
+Với lớp c, notebook cộng giao I(c,e) và hợp U(c,e) của tiền cảnh qua các episode e, chỉ 
+tính pixel có nhãn khác 255. IoU_c = ΣₑI(c,e) / ΣₑU(c,e). mIoU của miền bằng 100 × 
+trung bình IoU_c trên các lớp có tổng hợp lớn hơn 0. Lớp không có tổng hợp hợp lệ được 
+loại khỏi phép tính; notebook không gán mặc định IoU bằng 1 cho trường hợp này. 
+Trung bình bốn miền = [mIoU_FSS + mIoU_DeepGlobe + mIoU_ISIC + mIoU_Chest] / 
+4. Bốn miền có trọng số bằng nhau, không phụ thuộc số lớp hay số bản ghi. Đây là trung 
+bình mIoU theo miền, khác với trung bình IoU của từng episode. Các chênh lệch trong 
+chương dùng đơn vị điểm phần trăm. 
+4.3.2. Ba yếu tố khảo sát trong LCM 
+Tất cả cấu hình LCM dùng patch 16 × 16 pixel, vectơ RGB trung bình, cùng cách xếp 
+hạng patch theo chênh lệch điểm tiền cảnh–hậu cảnh, trọng số w = 0,6 và độ lệch β = 0,7. 
+K là số patch neo, không phải số ảnh hỗ trợ; toàn bộ thực nghiệm vẫn là 1-shot. 
+Nhánh cosine dùng d = 1 − cos(x,a); nhánh Euclidean trong notebook này dùng L2 bình 
+phương: d = Σⱼ(xⱼ − aⱼ)² trên ba kênh RGB. Cả hai chuyển khoảng cách sang độ tương 
+đồng bằng min–max riêng từng neo: Sim = 1 − (d − dmin) / max(dmax − dmin, 10⁻⁶). 
+Trong chương, nhãn Euclidean luôn chỉ L2². L2 và L2² có cùng thứ tự khoảng cách 
+nhưng không cho cùng bản đồ tương đồng sau min–max. 
+
+PAGE 40
+Các bản đồ tương đồng của K neo được nội suy về kích thước ảnh rồi lấy trung bình: δ = 
+0,6 × [meanₖ(Simₖ) − 0,7]. Cập nhật cộng dùng S′fg = Sfg + δ; cập nhật nhân dùng S′fg 
+= Sfg × (1 + δ). Điểm hậu cảnh giữ nguyên và mặt nạ cuối được lấy bằng argmax. Cách 
+lấy trung bình theo K giúp tránh tăng biên độ hiệu chỉnh chỉ vì tăng số neo. 
+Thiết kế đầy đủ 2 độ đo × 2 giá trị K × 2 quy tắc cập nhật tạo tám cấu hình LCM. Khi so 
+sánh một yếu tố, nhóm giữ nguyên hai yếu tố còn lại. Cấu hình này phục vụ ablation có 
+kiểm soát; không đồng nhất mọi chi tiết với cách triển khai trong notebook cũ hoặc kết 
+quả công bố của tác giả. 
+
+PAGE 41
+4.4. Kết quả tổng thể và đóng góp của LEM, LCM 
+Bảng 4.4. Kết quả trên bốn miền đích, 1-shot, mIoU (%) 
+ 
+Cấu hình 
+FSS-100
+0 
+DeepGlo
+be 
+ISIC-201
+8 
+Chest 
+X-ray 
+TB 
+SSP 
+76,70 
+36,04 
+38,17 
+72,54 
+55,86 
+SSP + LEM 
+76,54 
+36,34 
+39,53 
+70,13 
+55,64 
+Cosine / K=1 / Cộng 
+76,72 
+37,41 
+40,52 
+69,12 
+55,94 
+Cosine / K=1 / Nhân 
+76,80 
+40,57 
+42,08 
+63,38 
+55,71 
+Cosine / K=3 / Cộng 
+76,74 
+37,38 
+40,58 
+69,12 
+55,96 
+Cosine / K=3 / Nhân 
+76,91 
+40,55 
+42,62 
+63,39 
+55,87 
+Euclidean L2² / K=1 / 
+Cộng 
+76,79 
+37,46 
+40,80 
+71,78 
+56,71 
+Euclidean L2² / K=1 / 
+Nhân 
+76,89 
+40,85 
+43,18 
+74,40 
+58,83 
+Euclidean L2² / K=3 / 
+Cộng 
+76,82 
+37,49 
+40,86 
+71,75 
+56,73 
+Euclidean L2² / K=3 / 
+Nhân 
+77,07 
+41,05 
+43,65 
+74,45 
+59,06 
+ 
+SSP đạt 55,86% mIoU trung bình; SSP + LEM đạt 55,64%. Bảng chênh lệch của 
+notebook ghi nhận LEM làm giảm 0,23 điểm trung bình, với thay đổi lần lượt −0,16; 
++0,30; +1,36 và −2,42 điểm trên FSS-1000, DeepGlobe, ISIC-2018 và Chest X-ray. Do 
+đó, lần chạy này chưa cho thấy LEM riêng lẻ cải thiện trung bình bốn miền. 
+Euclidean L2² / K=3 / Nhân đạt trung bình cao nhất trong các cấu hình khảo sát: 59,06%. 
+Theo bảng chênh lệch tính trước khi làm tròn, cấu hình này tăng 3,19 điểm so với SSP và 
+3,42 điểm so với cùng checkpoint SSP + LEM trước hiệu chỉnh. Mức tăng so với SSP + 
+
+PAGE 42
+LEM trên bốn miền lần lượt là +0,52; +4,71; +4,12 và +4,32 điểm. Đây là kết quả cao 
+nhất quan sát được trên tập khảo sát, chưa phải xác nhận độc lập sau chọn cấu hình. 
+Trong lần chạy này, Euclidean L2² / K=3 / Nhân đồng thời đạt điểm cao nhất ở cả bốn 
+miền: 77,07% trên FSS-1000, 41,05% trên DeepGlobe, 43,65% trên ISIC-2018 và 
+74,45% trên Chest X-ray. Kết quả không chứng minh cấu hình này luôn tối ưu trên các 
+seed, bộ dữ liệu hoặc giao thức khác. 
+Các ô mIoU và cột trung bình trong Bảng 4.4 được chép từ đầu ra notebook đã làm tròn 
+hai chữ số. Chênh lệch của bảng ablation gốc được tính trước khi làm tròn, nên có thể 
+lệch 0,01 điểm so với phép trừ trực tiếp hai ô hiển thị. 
+4.5. So sánh cosine và Euclidean 
+Bảng 4.5. Đối chiếu độ đo khi giữ nguyên K và quy tắc cập nhật 
+ 
+K 
+Cập nhật 
+TB cosine 
+TB Euclidean 
+Euclidean − cosine 
+1 
+Cộng 
+55,94 
+56,71 
++0,76 
+3 
+Cộng 
+55,96 
+56,73 
++0,77 
+1 
+Nhân 
+55,71 
+58,83 
++3,12 
+3 
+Nhân 
+55,87 
+59,06 
++3,19 
+ 
+Euclidean L2² có mIoU trung bình cao hơn cosine trong cả bốn cặp giữ nguyên K và quy 
+tắc cập nhật. Khoảng cách là +0,76 đến +0,77 điểm với phép cộng và +3,12 đến +3,19 
+điểm với phép nhân. Bảng 4.5 đảo dấu các hiệu số Cosine − Euclidean đã lưu trong 
+notebook. 
+Lấy trung bình bốn cấu hình của mỗi độ đo từ các điểm hiển thị, cosine đạt xấp xỉ 
+55,87%, còn Euclidean L2² đạt 57,83%, chênh khoảng 1,96 điểm. Đây là thống kê mô tả 
+tập cấu hình đã thử, không phải điểm của một mô hình hoặc cấu hình suy luận mới. 
+Euclidean L2² cao hơn cosine trên cả bốn miền ở các cặp cấu hình tương ứng của lần 
+chạy này. Với K=3 và phép nhân, chênh lệch Euclidean − cosine lần lượt là +0,16; +0,51; 
++1,03 và +11,06 điểm. Chênh lệch lớn nhất ở Chest X-ray; vì vậy, kết quả trung bình cần 
+được đọc cùng kết quả từng miền. 
+
+PAGE 43
+4.6. So sánh cập nhật cộng và nhân 
+Bảng 4.6. Đối chiếu quy tắc cập nhật khi giữ nguyên độ đo và K 
+ 
+Độ đo 
+K 
+TB cộng 
+TB nhân 
+Cộng − nhân 
+Cosine 
+1 
+55,94 
+55,71 
++0,23 
+Cosine 
+3 
+55,96 
+55,87 
++0,09 
+Euclidean L2² 
+1 
+56,71 
+58,83 
+−2,12 
+Euclidean L2² 
+3 
+56,73 
+59,06 
+−2,33 
+ 
+Tác động của phép cộng và phép nhân phụ thuộc độ đo. Với cosine, phép cộng cao hơn 
+phép nhân khoảng 0,23 điểm ở K=1 và 0,09 điểm ở K=3. Với Euclidean L2², phép nhân 
+cao hơn phép cộng khoảng 2,12 và 2,33 điểm tương ứng. Bảng 4.6 tính xấp xỉ từ các 
+trung bình đã làm tròn; không thể kết luận một quy tắc cập nhật luôn tốt hơn quy tắc còn 
+lại. 
+Với cosine và K=3, chuyển từ cộng sang nhân tăng DeepGlobe từ 37,38% lên 40,55% và 
+ISIC-2018 từ 40,58% lên 42,62%, nhưng giảm Chest X-ray từ 69,12% xuống 63,39%. 
+Với Euclidean L2² và K=3, phép nhân cao hơn phép cộng ở cả bốn miền, lần lượt khoảng 
++0,25; +3,56; +2,79 và +2,70 điểm, tính từ các ô hiển thị. 
+Hai công thức tác động trực tiếp lên logits, chưa qua softmax. Phép nhân phụ thuộc cả 
+dấu và độ lớn của điểm tiền cảnh, nên không tương đương với cộng một lượng cố định 
+hoặc nhân xác suất. Đây là khác biệt về cơ chế; số liệu hiện tại chưa đủ để xác định 
+nguyên nhân cụ thể của từng lỗi phân đoạn. 
+
+PAGE 44
+4.7. Ảnh hưởng của số vùng neo K 
+Bảng 4.7. Thay đổi trung bình khi tăng K từ 1 lên 3 
+ 
+Độ đo 
+Cập nhật 
+TB K=1 
+TB K=3 
+Δ K=3 − K=1 
+Cosine 
+Cộng 
+55,94 
+55,96 
++0,01 
+Cosine 
+Nhân 
+55,71 
+55,87 
++0,16 
+Euclidean L2² 
+Cộng 
+56,71 
+56,73 
++0,02 
+Euclidean L2² 
+Nhân 
+58,83 
+59,06 
++0,23 
+ 
+Theo bảng chênh lệch gốc, tăng K từ 1 lên 3 làm tăng trung bình +0,01 điểm với cosine + 
+cộng, +0,16 với cosine + nhân, +0,02 với Euclidean L2² + cộng và +0,23 với Euclidean 
+L2² + nhân. Chênh lệch tính từ các ô đã làm tròn có thể lệch 0,01 điểm. 
+K=3 cho trung bình cao hơn K=1 trong cả bốn cặp khảo sát, nhưng mức tăng nhỏ hơn tác 
+động của thay đổi độ đo hoặc quy tắc cập nhật. Với cấu hình dẫn đầu Euclidean L2² + 
+nhân, K=3 đạt 59,06% so với 58,83% của K=1. Một seed chưa đủ để khẳng định ưu thế 
+này ổn định qua nhiều lần chạy. 
+4.8. Thảo luận, giới hạn và kết luận thực nghiệm 
+Kết quả gợi ý Euclidean L2² + nhân + K=3 là cấu hình có mIoU trung bình cao nhất trong 
+lần chạy đã lưu, đồng thời dẫn đầu cả bốn miền. Tuy nhiên, cấu hình này được nhận diện 
+sau khi xem kết quả các miền đích. Cần báo cáo toàn bộ bảng ablation và phân biệt kết 
+quả khảo sát với đánh giá xác nhận trên dữ liệu độc lập; checkpoint train vẫn chỉ được 
+chọn bằng validation nguồn. 
+Thực nghiệm có một seed huấn luyện và một tập 1.000 episode cố định cho mỗi miền; 
+chưa có độ lệch chuẩn, khoảng tin cậy hoặc kiểm định ý nghĩa thống kê. Những chênh 
+lệch nhỏ cần được kiểm chứng bằng nhiều lần huấn luyện và lấy mẫu lại. Đánh giá theo 
+cặp giúp giảm nhiễu do khác episode giữa các cấu hình, nhưng không loại bỏ biến động 
+do huấn luyện. 
+Các lớp được lấy trung bình là những lớp xuất hiện và có tổng hợp hợp lệ trong tập 
+episode, không mặc định là toàn bộ lớp của bộ dữ liệu. Bộ lấy mẫu bảo đảm hai bản ghi 
+khác nhau; riêng DeepGlobe, các ô có thể xuất phát từ cùng ảnh gốc, nên chưa bảo đảm 
+
+PAGE 45
+hỗ trợ và truy vấn thuộc hai ảnh vệ tinh gốc khác nhau. Danh sách nguồn VOC, phần bổ 
+sung SBD và danh sách episode cũng chưa được đối chiếu đầy đủ với giao thức của bài 
+báo. 
+Notebook này thay đổi đồng thời refinement, lịch learning rate, augmentation, phép chia 
+train/validation, tiêu chí chọn checkpoint, khởi tạo LEM và cách chuẩn bị DeepGlobe so 
+với LoEC_LCM_Ablation.ipynb. Vì vậy, không dùng chênh lệch giữa hai notebook để cô 
+lập đóng góp của một thay đổi. Các điểm cũ và số liệu bài báo thuộc giao thức riêng, chỉ 
+là mốc tham khảo; đối chứng chính ở đây nằm trong cùng lần chạy. 
+Ba nhận xét chính từ lần chạy đã lưu là: LEM riêng lẻ chưa cải thiện trung bình so với 
+SSP; Euclidean L2² cao hơn cosine trong bốn cặp tương ứng; phép nhân có lợi cho 
+Euclidean L2² nhưng không có lợi về trung bình cho cosine. Cấu hình cao nhất là 
+Euclidean L2² + nhân + K=3, tăng 3,19 điểm so với SSP và 3,42 điểm so với SSP + 
+LEM. Cần lặp nhiều seed, chuẩn hóa episode và mở rộng sang 5-shot trước khi khái quát 
+kết luận. 
+
+PAGE 46
+4.9. Kết quả phân đoạn trực quan 
+Nhóm sử dụng episode số 0 của mỗi miền trong lần đánh giá ablation để đối chiếu mặt nạ 
+dự đoán. Mỗi hình gồm ba hàng, bốn cột: hàng đầu là ảnh truy vấn, mặt nạ tham chiếu, 
+SSP và SSP + LEM; hàng thứ hai là bốn cấu hình cosine theo thứ tự K=1 cộng, K=1 
+nhân, K=3 cộng, K=3 nhân; hàng cuối là bốn cấu hình Euclidean theo cùng thứ tự. Vùng 
+trắng biểu thị tiền cảnh, vùng đen biểu thị hậu cảnh. Các dự đoán trong mỗi hình dùng 
+cùng ảnh hỗ trợ và ảnh truy vấn. 
+ 
+Hình 4.1. So sánh mặt nạ của mười cấu hình trên FSS-1000 (episode 0). 
+Trong ví dụ chiếc túi, các mô hình nhận diện được thân túi nhưng còn sai khác ở quai, 
+khoảng hở và các vùng khuyết bên trong. Euclidean L2² kết hợp phép nhân giữ khoảng 
+hở giữa hai quai rõ hơn các biến thể cộng trong ảnh này, song mặt nạ vẫn có vùng thiếu 
+hoặc thừa. Trên toàn miền, Euclidean L2² + nhân + K=3 đạt 77,07%, cao nhất trong các 
+cấu hình khảo sát; chất lượng riêng ảnh minh họa chưa được định lượng bằng IoU. 
+
+PAGE 47
+ 
+Hình 4.2. So sánh mặt nạ của mười cấu hình trên DeepGlobe (episode 0). 
+Ví dụ DeepGlobe có tiền cảnh ở một số vùng rời nhau. SSP và SSP + LEM xác định 
+được các vùng trung tâm nhưng bỏ sót nhiều phần ở rìa trái. Phép nhân mở rộng tiền cảnh 
+so với phép cộng, đồng thời tạo thêm vùng dự đoán ở các vị trí không khớp tham chiếu. 
+Trên toàn miền, Euclidean L2² + nhân + K=3 đạt 41,05%, cao nhất trong lần khảo sát; 
+ảnh riêng lẻ chỉ minh họa dạng sai lệch. 
+
+PAGE 48
+ 
+Hình 4.3. So sánh mặt nạ của mười cấu hình trên ISIC-2018 (episode 0). 
+Trong ví dụ ISIC-2018, SSP dự đoán vùng tổn thương rộng hơn tham chiếu và có phần 
+thừa phía trên. SSP + LEM thu hẹp một phần vùng này; LCM tiếp tục làm thay đổi 
+đường biên. Các biến thể nhân có đường biên góc cạnh theo patch, nên không thể mặc 
+định điểm toàn miền cao hơn đồng nghĩa mọi chi tiết ảnh đều tốt hơn. Trên toàn miền, 
+Euclidean L2² + nhân + K=3 đạt 43,65%, cao nhất trong bảng. 
+
+PAGE 49
+ 
+Hình 4.4. So sánh mặt nạ của mười cấu hình trên Chest X-ray (episode 0). 
+Trong ví dụ Chest X-ray, các cấu hình nhận diện được hai vùng phổi nhưng còn sai khác 
+ở đỉnh, đáy và vùng giữa hai phổi. Cosine + nhân mở rộng nhiều tiền cảnh phía trên và 
+quanh đường biên. Euclidean L2² + nhân giữ khoảng tách hai vùng phổi nhưng tạo đường 
+biên dạng bậc thang và vẫn còn vùng thừa. Điểm cao nhất toàn miền là 74,45% với 
+Euclidean L2² + nhân + K=3; đây không phải IoU của riêng ảnh minh họa. 
+Nguồn hình: đầu ra mục 7 của LoEC_trainofffical.ipynb. Mỗi miền minh họa episode số 
+0, không chọn theo IoU cao nhất. Hình thể hiện mười cấu hình trên cùng support và 
+query của từng miền; các số mIoU trong phần nhận xét là kết quả toàn miền từ 1.000 
+episode, không phải điểm của ảnh minh họa. 
+
+PAGE 50
+CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN 
+5.1. Tổng kết kết quả nghiên cứu 
+Nhóm đã xây dựng quy trình phân đoạn ảnh ít mẫu xuyên miền dựa trên SSP và hai thành 
+phần LEM, LCM. Thực nghiệm dùng ResNet-50 trên Kaggle Tesla T4, huấn luyện hai 
+mô hình SSP và SSP + LEM trong 35 epoch với refinement hai vòng và lịch giảm 
+learning rate cosine. PASCAL VOC được chia 90% train và 10% validation theo ảnh gốc. 
+Checkpoint chọn theo IoU foreground gộp trên 200 episode validation nguồn: epoch 31 
+cho SSP và epoch 26 cho SSP + LEM. Đánh giá đích sử dụng thiết lập 1-way 1-shot trên 
+bốn miền. 
+Theo kết quả đã lưu trong LoEC_trainofffical.ipynb, SSP đạt 55,86% mIoU trung bình và 
+SSP + LEM đạt 55,64%. Bảng chênh lệch gốc ghi nhận LEM riêng lẻ giảm 0,23 điểm 
+phần trăm. Vì vậy, lần chạy này chưa cho thấy LEM tự nó cải thiện trung bình xuyên 
+miền; kết luận cần gắn với dữ liệu, khởi tạo và quy trình huấn luyện cụ thể. 
+Trong tám cấu hình LCM, Euclidean L2² kết hợp phép nhân với K=3 đạt điểm cao nhất 
+quan sát được: 59,06% mIoU trung bình. Theo bảng chênh lệch trước khi làm tròn, cấu 
+hình này tăng 3,19 điểm so với SSP và 3,42 điểm so với cùng checkpoint SSP + LEM 
+chưa hiệu chỉnh. Mức tăng so với SSP + LEM ở FSS-1000, DeepGlobe, ISIC-2018 và 
+Chest X-ray lần lượt là +0,52; +4,71; +4,12 và +4,32 điểm. 
+Khi giữ nguyên K và quy tắc cập nhật, Euclidean L2² có trung bình cao hơn cosine trong 
+cả bốn cặp, từ 0,76 đến 3,19 điểm theo bảng delta gốc. Phép nhân có lợi về trung bình khi 
+đi cùng Euclidean L2², trong khi phép cộng cao hơn phép nhân khi dùng cosine. Do đó, 
+hiệu quả cập nhật phụ thuộc độ đo; không thể suy ra ưu thế chung của phép cộng hoặc 
+phép nhân. 
+Euclidean L2² + nhân + K=3 đồng thời dẫn đầu bốn miền trong lần khảo sát: FSS-1000 
+đạt 77,07%, DeepGlobe 41,05%, ISIC-2018 43,65% và Chest X-ray 74,45%. Hình ở mục 
+4.9 cho thấy LCM thay đổi đường biên, vùng bỏ sót và vùng tiền cảnh thừa theo từng 
+ảnh. Kết quả toàn miền cao nhất không bảo đảm mặt nạ tốt nhất cho mọi episode. 
+5.2. Những kết quả và đóng góp của nhóm 
+Nhóm đã tổ chức quy trình từ ghép ảnh–mặt nạ, tiền xử lý và lấy mẫu episode đến huấn 
+luyện và tính mIoU tích lũy theo lớp. Dữ liệu nguồn được tách theo ảnh gốc để chọn 
+checkpoint trên validation; LEM dùng Random Conv phân phối chuẩn, không bias. Nhật 
+ký ghi nhận 4.254 bản ghi VOC, 23.183 bản ghi DeepGlobe, 2.400 FSS-1000, 2.594 
+ISIC-2018 và 704 Chest X-ray. Các số này là bản ghi theo lớp hoặc ô ảnh, không phải số 
+ảnh gốc duy nhất. 
+
+PAGE 51
+Đóng góp chính của thực nghiệm là đối chứng SSP với SSP + LEM và khảo sát đầy đủ 
+tám tổ hợp LCM theo độ đo, số neo và cách cập nhật. Mỗi episode kiểm thử chỉ được suy 
+luận một lần qua từng mô hình; các nhánh LCM dùng bản sao của cùng logits SSP + 
+LEM. Cách tổ chức này giúp tách ảnh hưởng của từng yếu tố suy luận và tránh quy chênh 
+lệch giữa hai cấu hình đồng thời thay đổi nhiều tham số cho riêng độ đo. 
+Nhóm đồng thời phân biệt kết quả định lượng với minh họa trên một ảnh. Các bảng cho 
+biết hiệu năng trung bình theo miền, còn các hình dự đoán giúp mô tả những dạng sai 
+lệch cụ thể. Kết quả tốt trên một ví dụ không được dùng để suy ra ưu thế trên toàn bộ tập 
+kiểm thử. Mã nguồn, cấu hình, checkpoint và các bảng xuất từ notebook tạo cơ sở để tiếp 
+tục kiểm chứng các nhận xét này. 
+5.3. Hạn chế và khó khăn trong thực nghiệm 
+Thực nghiệm mới có một seed huấn luyện và một tập episode cố định cho mỗi miền; 
+chưa có độ lệch chuẩn, khoảng tin cậy hay kiểm định ý nghĩa thống kê. Mức tăng K=3 so 
+với K=1 là 0,01–0,23 điểm tùy cấu hình, chưa đủ để khẳng định lợi ích ổn định của việc 
+tăng số neo. Cấu hình 59,06% được nhận diện trên chính tập khảo sát, cần đánh giá xác 
+nhận độc lập để tránh lạc quan sau lựa chọn. 
+Hai lần huấn luyện đặt lại cùng seed và cùng phép chia nguồn, nhưng chưa lưu danh sách 
+episode và phép tăng cường train để kiểm chứng sự trùng khớp tuyệt đối. Đánh giá theo 
+cặp giữ cùng episode kiểm thử, không loại bỏ biến động do train. Checkpoint đã được 
+chọn trên validation nguồn riêng; tuy nhiên, chỉ số chọn là IoU foreground gộp, khác 
+mIoU theo lớp ở miền đích, và chưa có đối chứng giữa các tiêu chí chọn checkpoint. 
+Việc chuẩn bị dữ liệu cũng ảnh hưởng đến khả năng đối chiếu với bài báo. Số bản ghi 
+quét được không phải số ảnh gốc duy nhất; danh sách VOC và phần bổ sung SBD chưa 
+được xác minh đầy đủ theo giao thức của tác giả. Với DeepGlobe, hai bản ghi khác nhau 
+có thể là các ô thuộc cùng ảnh vệ tinh gốc, nên bộ lấy mẫu hiện tại chưa bảo đảm hỗ trợ 
+và truy vấn luôn đến từ hai ảnh gốc khác nhau. mIoU chỉ lấy trung bình trên các lớp xuất 
+hiện và có tổng hợp hợp lệ trong các episode. 
+LCM dùng RGB trung bình theo patch, min–max riêng từng neo và trung bình bản đồ 
+tương đồng theo K. Nhánh Euclidean dùng L2²; kết quả không thể thay trực tiếp cho L2 
+của notebook ablation cũ. Nhiều yếu tố train và dữ liệu đã thay đổi đồng thời giữa hai 
+notebook, nên chênh lệch liên notebook không cô lập tác động từng thành phần. Thiết lập 
+5-shot và độ ổn định nhiều seed chưa được đánh giá. 
+
+PAGE 52
+5.4. Hướng cải tiến và phát triển 
+Trước hết, nhóm cần chuẩn hóa danh sách ảnh–mặt nạ và lưu cố định các episode kiểm 
+thử, đồng thời đối chiếu dữ liệu VOC/SBD với giao thức gốc. Bộ lấy mẫu DeepGlobe 
+nên tách ảnh hỗ trợ và truy vấn theo định danh ảnh vệ tinh gốc. Khi báo cáo mIoU, cần 
+ghi thêm số lớp thực sự được đánh giá và kiểm tra các trường hợp nhãn không hợp lệ. 
+Tiếp theo, nhóm có thể lặp lại huấn luyện SSP và SSP + LEM với nhiều seed, sử dụng 
+danh sách episode huấn luyện và phép tăng cường đã xác định trước để kiểm soát chặt 
+hơn tác động của LEM. Trung bình, độ lệch chuẩn và khoảng tin cậy theo từng miền sẽ 
+giúp đánh giá các chênh lệch nhỏ. Việc chọn cấu hình LCM cần dựa trên quy tắc hoặc tập 
+xác thực phù hợp, tách biệt với dữ liệu dùng để báo cáo kết quả cuối. 
+Các hướng mở rộng gồm đánh giá 5-shot, khảo sát thêm kích thước patch, số neo, trọng 
+số và ngưỡng hiệu chỉnh. Có thể kiểm tra biểu diễn màu hoặc đặc trưng mức thấp khác, 
+đồng thời giữ nguyên các yếu tố còn lại để xác định nguồn gốc của thay đổi hiệu năng. 
+Mọi kết luận về cấu hình mới cần đi kèm đối chứng trên cùng tập episode. 
+Cuối cùng, nhóm có thể phân tích định lượng các dạng lỗi ở mục 4.9 và đo thời gian suy 
+luận, bộ nhớ, chi phí LCM. Cần làm ablation từng thay đổi huấn luyện trên cùng dữ liệu 
+và episode, đồng thời kiểm tra riêng L2 so với L2². Với bằng chứng hiện có, Euclidean 
+L2² + nhân + K=3 là cấu hình có trung bình cao nhất trong lần khảo sát; khả năng áp 
+dụng rộng hơn cần được kiểm chứng. 
+
+PAGE 53
+DANH MỤC TÀI LIỆU THAM KHẢO 
+[1] Y. Liu, Y. Zou, Y. Li và R. Li, “The Devil is in Low-Level Features for Cross-Domain 
+Few-Shot Segmentation,” CVPR, 2025, tr. 4618–4627. 
+[2] S. Lei, X. Zhang, J. He, F. Chen, B. Du và C.-T. Lu, “Cross-Domain Few-Shot 
+Semantic Segmentation,” ECCV, 2022. 
+[3] Q. Fan, W. Pei, Y.-W. Tai và C.-K. Tang, “Self-Support Few-Shot Semantic 
+Segmentation,” ECCV, 2022. 
+
+PAGE 54
+ 

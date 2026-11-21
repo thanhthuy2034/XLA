@@ -1,0 +1,388 @@
+PAGE 1
+ 
+BÀI TẬP LỚN MÔN XỬ LÝ ẢNH · PTIT
+GVHD  TS. Đào Thị Thúy Quỳnh
+Nguyễn Doãn Hợp · Lê Thanh Thủy · Dương Minh Thái
+Phân đoạn ảnh ít mẫu
+xuyên miền với LoEC  
+
+PAGE 2
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     
+Vì sao cần phân đoạn ảnh?
+Phân loại ảnh chỉ cho biết có người; phân đoạn còn cho biết người nằm ở đâu.
+PHÂN LOẠI ẢNH
+Chỉ cho biết bức ảnh có đối 
+tượng gì, ví dụ ảnh có người.
+PHÂN ĐOẠN ẢNH
+Dự đoán nhãn cho từng điểm 
+ảnh để xác định vị trí, hình dạng 
+và đường biên.
+ẢNH BAN ĐẦU
+MẶT NẠ
+Trong mặt nạ, vùng trắng là người cần tìm, 
+còn vùng đen là phần nền.
+Do phải gán nhãn đến từng điểm ảnh, việc chuẩn bị dữ liệu phân đoạn rất tốn công.
+
+PAGE 3
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     
+Phân đoạn ảnh ít mẫu hoạt động ra sao?
+Phân đoạn ít mẫu giúp nhận diện lớp đối tượng mới chỉ với vài ảnh mẫu có nhãn.
+1. Ảnh hỗ trợ
+2. Mặt nạ hỗ trợ
+3. Ảnh mới
+4. Dự đoán
+BƯỚC 1: Ảnh hỗ trợ và mặt nạ cho 
+mô hình biết đối tượng cần tìm là gì.
+BƯỚC 2: Với ảnh mới, mô hình dự 
+đoán vùng đối tượng mà không biết 
+mặt nạ thật.
+
+PAGE 4
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     3 / 7
+Phân đoạn ít mẫu xuyên miền là gì?
+Mô hình huấn luyện trên ảnh tự nhiên nhưng phải phân đoạn ảnh thuộc miền khác.
+MIỀN NGUỒN
+Ảnh tự nhiên như người, động 
+vật và xe cộ. Đây là dữ liệu dùng 
+để huấn luyện.
+MIỀN ĐÍCH
+Ảnh X-quang, vệ tinh, ảnh da. 
+Mô hình chỉ có một số ít ảnh hỗ 
+trợ có nhãn.
+→
+VÌ SAO KHÓ?
+Hai miền khác biệt về màu sắc, độ sáng, kết cấu và cả lớp đối tượng. Đặc 
+trưng đã học có thể không còn phù hợp.
+Sự khác biệt giữa hai miền gọi là dịch chuyển miền dữ liệu, khiến kết quả dễ suy giảm.
+
+PAGE 5
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     4 / 7
+Huấn luyện lâu hơn chưa chắc tốt hơn
+Trục ngang: số lượt huấn luyện; trục dọc: mIoU, chỉ số phân đoạn càng cao càng tốt.
+PHƯƠNG PHÁP CŨ
+mIoU cao ở giai đoạn đầu nhưng giảm 
+khi tiếp tục huấn luyện.
+PHƯƠNG PHÁP LoEC
+mIoU nhìn chung duy trì và tiếp tục cải 
+thiện qua các lượt huấn luyện.
+Huấn luyện lâu hơn trên miền nguồn chưa chắc giúp phân đoạn tốt hơn ở miền đích.
+
+PAGE 6
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     5 / 7
+Nguyên nhân
+Tác giả tập trung nghiên cứu các đặc trưng mức thấp. Các tầng nông trích xuất 
+cạnh, màu sắc, kết cấu và đường biên; tầng sâu dùng chúng để nhận diện đối 
+tượng.
+Ở MIỀN NGUỒN
+Bản đồ đặc trưng từ 
+các tầng đầu có thể 
+phản ánh tương đối 
+rõ cấu trúc đối tượng.
+KHI CHUYỂN MIỀN
+Đặc trưng tầng nông 
+có thể không còn phù 
+hợp, khiến sai lệch 
+truyền tới các tầng 
+sâu.
+Bản đồ đặc trưng từ bài báo gốc
+Nghiên cứu cho thấy trong quá trình huấn luyện, các tầng nông có thể ngày càng phụ thuộc 
+vào những đặc điểm riêng của miền nguồn.
+
+PAGE 7
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     6 / 7
+Thử cố định các tầng nông
+Để kiểm chứng, tác giả thử giữ nguyên trọng số hai tầng đầu thay vì tiếp tục huấn 
+luyện chúng.
+56,64%
+Huấn luyện toàn bộ bốn 
+giai đoạn của mạng.
+57,21%
+Cố định hai giai đoạn đầu, 
+chỉ huấn luyện các tầng 
+sau.
+→
+Cố định hai tầng đầu giúp mIoU trung bình tăng 0,57 điểm phần trăm 
+trên bốn miền đích.
+Tầng nông học lệch theo miền nguồn có thể làm giảm hiệu suất; nhưng cố định hoàn toàn 
+chưa tối ưu.
+
+PAGE 8
+CHƯƠNG 1  /  GIỚI THIỆU BÀI TOÁN     7 / 7
+LoEC: tăng cường và hiệu chỉnh đặc trưng
+Tác giả đề xuất LoEC để vừa hạn chế phụ thuộc miền nguồn, vừa tận dụng thông tin 
+của miền đích.
+LEM – KHI HUẤN LUYỆN
+Tạo biến đổi để tăng tính đa dạng 
+của đặc trưng mức thấp.
+Nhờ vậy, mô hình bớt phụ thuộc 
+vào miền nguồn.
+LCM – KHI KIỂM THỬ
+Dùng thông tin từ ảnh miền đích 
+để hiệu chỉnh dự đoán ban đầu.
+Mục đích là cải thiện mặt nạ phân 
+đoạn.
+Nhóm tái hiện LoEC trên nền ResNet-50 và SSP. Phần sau trình bày cách 
+triển khai và thực nghiệm.
+LoEC dùng LEM khi huấn luyện và LCM khi kiểm thử để cải thiện phân đoạn xuyên miền.
+
+PAGE 9
+CHƯƠNG 2  /  KIẾN TRÚC VÀ TĂNG CƯỜNG ĐẶC TRƯNG
+Kiến trúc tổng thể LoEC
+Hình 2.1 · Kiến trúc tổng thể LoEC
+Backbone chung → Comparison Module → bản đồ điểm phân đoạn sơ bộ
+
+PAGE 10
+CHƯƠNG 2  /  KIẾN TRÚC VÀ TĂNG CƯỜNG ĐẶC TRƯNG
+LEM trong giai đoạn huấn luyện
+Hình 2.2 · Luồng xử lý LEM trên đặc trưng tầng thấp của Support
+
+PAGE 11
+CHƯƠNG 3  /  HIỆU CHỈNH VÀ DỰ ĐOÁN
+Mô hình tổng quát LCM
+
+PAGE 12
+CHƯƠNG 3  /  HIỆU CHỈNH VÀ DỰ ĐOÁN
+Bước 1–2: Confidence Map & Chọn ô mẫu
+
+PAGE 13
+CHƯƠNG 3  /  HIỆU CHỈNH VÀ DỰ ĐOÁN
+Bước 3: So sánh màu sắc (Cosine & Euclidean)
+Mỗi ô được chấm điểm giống màu [0, 1] so với ô mỏ neo.
+
+PAGE 14
+CHƯƠNG 3  /  HIỆU CHỈNH VÀ DỰ ĐOÁN
+Bước 4: Hiệu chỉnh điểm & Ra mặt nạ cuối
+Cộng bù tuyến tính giúp vá rìa vật thể thiếu và lọc nhiễu nền.
+
+PAGE 15
+CHƯƠNG 4  /  THỰC NGHIỆM VÀ ĐÁNH GIÁ
+Dữ liệu và cấu hình thực nghiệm
+PASCAL VOC: 4.254 bản ghi / 20 lớp · chia ảnh 90% train, 10% 
+val
+Bốn miền đích
+FSS-1000 · 2.400 bản ghi / 240 lớp
+DeepGlobe · 23.183 bản ghi / 6 lớp
+ISIC-2018 · 2.594 bản ghi / 3 nhóm
+Chest X-ray · 704 bản ghi / 1 lớp
+35 epoch · refine=True · LR cosine 10⁻³ → 10⁻⁵
+1-shot · 1.000 episode/miền · chọn checkpoint theo IoU val nguồn
+
+PAGE 16
+LoEC = SSP + LEM + LCM cosine · K=3 · phép cộng
+Bộ dữ liệu
+SSP
+LoEC · Cosine
+Δ LoEC − SSP
+FSS-1000
+76,70
+76,74
++0,04
+DeepGlobe
+36,04
+37,38
++1,34
+ISIC-2018
+38,17
+40,58
++2,41
+CHƯƠNG 4  /  THỰC NGHIỆM VÀ ĐÁNH GIÁ
+Đối chứng: SSP và LoEC dùng cosine
+Nguồn: LoEC_trainofffical.ipynb · mIoU (%) · Δ từ bảng gốc, trước làm tròn.
+Chest X-ray
+72,54
+69,12
+−3,42
+Trung bình
+55,86
+55,96
++0,09
+Cosine + cộng + K=3 tăng 0,09 điểm so với SSP.
+
+PAGE 17
+LoEC = SSP + LEM + LCM Euclidean L2² · K=3 · phép nhân
+Bộ dữ liệu
+SSP
+LoEC · L2²
+Δ LoEC − SSP
+FSS-1000
+76,70
+77,07
++0,37
+DeepGlobe
+36,04
+41,05
++5,01
+ISIC-2018
+38,17
+43,65
++5,48
+CHƯƠNG 4  /  THỰC NGHIỆM VÀ ĐÁNH GIÁ
+Đối chứng: SSP và LoEC dùng L2²
+Nguồn: LoEC_trainofffical.ipynb · mIoU (%) · Δ từ bảng gốc, trước làm tròn.
+Chest X-ray
+72,54
+74,45
++1,91
+Trung bình
+55,86
+59,06
++3,19
+
+PAGE 18
+Cùng checkpoint SSP + LEM · K=3 · phép nhân
+Bộ dữ liệu
+Cosine
+Euclidean L2²
+Δ Euclid − Cos
+FSS-1000
+76,91
+77,07
++0,16
+DeepGlobe
+40,55
+41,05
++0,51
+ISIC-2018
+42,62
+43,65
++1,03
+Chest X-ray
+63,39
+74,45
++11,06
+Trung bình
+55,87
+59,06
++3,19
+L2² cao hơn cosine ở cả 4 miền; khác biệt lớn nhất ở Chest 
+X-ray.
+CHƯƠNG 4  /  THỰC NGHIỆM VÀ ĐÁNH GIÁ
+Cosine và Euclidean L2²
+Nguồn: LoEC_trainofffical.ipynb · mIoU (%) · Δ từ bảng gốc, trước làm tròn.
+
+PAGE 19
+CHƯƠNG 4  /  THỰC NGHIỆM VÀ ĐÁNH GIÁ
+Tổng hợp 10 cấu hình, seed 42
+●
+Cao nhất: L2² + nhân, K=3: 59,06% (+3,19 điểm so với SSP).
+●
+LEM riêng: 55,64% (−0,23 điểm). SSP: 55,86%.
+●
+L2², K=3 − K=1: +0,02 điểm (cộng), +0,23 điểm (nhân).
+Cấu hình
+FSS-1000
+DeepGlobe
+ISIC-2018
+Chest X-ray
+TB
+SSP
+76,70
+36,04
+38,17
+72,54
+55,86
+SSP + LEM
+76,54
+36,34
+39,53
+70,13
+55,64
+Cosine / K=1 / Cộng
+76,72
+37,41
+40,52
+69,12
+55,94
+Cosine / K=1 / Nhân
+76,80
+40,57
+42,08
+63,38
+55,71
+Cosine / K=3 / Cộng
+76,74
+37,38
+40,58
+69,12
+55,96
+Cosine / K=3 / Nhân
+76,91
+40,55
+42,62
+63,39
+55,87
+L2² / K=1 / Cộng
+76,79
+37,46
+40,80
+71,78
+56,71
+L2² / K=1 / Nhân
+76,89
+40,85
+43,18
+74,40
+58,83
+L2² / K=3 / Cộng
+76,82
+37,49
+40,86
+71,75
+56,73
+L2² / K=3 / Nhân
+77,07
+41,05
+43,65
+74,45
+59,06
+
+PAGE 20
+CHƯƠNG 4  /  TRỰC QUAN HÓA
+Trực quan hóa · ISIC-2018
+LoEC_trainofffical.ipynb · episode 0 · trắng = tiền cảnh, đen = hậu cảnh.
+Viền xanh: mIoU toàn miền cao hơn; không phải IoU riêng ảnh.
+Ảnh gốc
+Mặt nạ chuẩn
+Cosine
+K=3 · nhân 
+(42,62%)
+Euclidean L2²
+K=3 · nhân 
+(43,65%)
+
+PAGE 21
+CHƯƠNG 4  /  TRỰC QUAN HÓA
+Trực quan hóa · Chest X-ray
+LoEC_trainofffical.ipynb · episode 0 · trắng = tiền cảnh, đen = hậu cảnh.
+Viền xanh: mIoU toàn miền cao hơn; không phải IoU riêng ảnh.
+Ảnh gốc
+Mặt nạ chuẩn
+Cosine
+K=3 · nhân 
+(63,39%)
+Euclidean L2²
+K=3 · nhân 
+(74,45%)
+
+PAGE 22
+CHƯƠNG 5  /  KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+Kết quả và giới hạn thực nghiệm
+Đối chứng SSP và LEM
+SSP: 55,86%. SSP + LEM: 55,64% mIoU trung bình, giảm 0,23 điểm.
+Euclidean L2² + nhân + K=3 cao nhất khảo sát
+Đạt 59,06% mIoU, tăng 3,19 điểm so với SSP và 3,42 điểm so với SSP + 
+LEM.
+Cần kiểm chứng độc lập và nhiều seed
+Một seed, 1.000 episode/miền. Cấu hình cao nhất được nhận diện sau 
+khảo sát.
+
+PAGE 23
+CHƯƠNG 5  /  KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+Các hướng mở rộng
+Mở rộng giao thức đánh giá
+Thử 5-shot và nhiều seed; báo cáo trung bình, độ lệch chuẩn và khoảng 
+tin cậy.
+Kiểm soát thay đổi trong LCM
+Đối chứng L2 và L2²; khảo sát K, patch, w, β trên cùng episode.
+Mở rộng phân tích và ứng dụng
+Phân tích lỗi theo miền; đo thời gian, bộ nhớ và thử thêm miền dữ liệu.
